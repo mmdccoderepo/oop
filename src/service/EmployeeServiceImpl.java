@@ -121,10 +121,10 @@ public class EmployeeServiceImpl implements EmployeeService {
             String phoneNumber = parts[4];
             String position = parts[5];
             double hourlyRate = Double.parseDouble(parts[6].isEmpty() ? "0" : parts[6]);
-            double monthlySalary = 0.0;
+            double basicSalary = 0.0;
 
-            if (parts.length > 8) {
-                monthlySalary = Double.parseDouble(parts[8]);
+            if (parts.length > 7 && !parts[7].isEmpty()) {
+                basicSalary = Double.parseDouble(parts[7]);
             }
 
             switch (position) {
@@ -132,7 +132,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                     return new model.RegularEmployee(id, firstName, lastName, email, phoneNumber, position, hourlyRate);
                 case "Payroll Admin":
                 case "HR Admin":
-                    return new model.SalariedEmployee(id, firstName, lastName, email, phoneNumber, position, monthlySalary);
+                    return new model.SalariedEmployee(id, firstName, lastName, email, phoneNumber, position, basicSalary);
                 default:
                     return null;
             }

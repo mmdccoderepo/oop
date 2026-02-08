@@ -12,7 +12,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -33,11 +32,9 @@ public class EmployeeManagementFrame extends JFrame {
     private JTextField txtHourlyRate;
     private JTextField txtSalary;
 
-    // Labels for input fields
     private JLabel lblHourlyRate;
     private JLabel lblSalary;
 
-    // New labels for computed amounts
     private JLabel lblGrossSalary;
     private JLabel lblDeductions;
     private JLabel lblNetSalary;
@@ -65,7 +62,13 @@ public class EmployeeManagementFrame extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
-        add(createFormPanel(), BorderLayout.WEST);
+        JPanel leftPanel = new JPanel();
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        leftPanel.add(createFormPanel());
+        leftPanel.add(Box.createVerticalStrut(10)); // Add spacing between panels
+        leftPanel.add(createSalaryPanel());
+
+        add(leftPanel, BorderLayout.WEST);
         add(createTablePanel(), BorderLayout.CENTER);
         add(createButtonPanel(), BorderLayout.SOUTH);
 
@@ -75,7 +78,7 @@ public class EmployeeManagementFrame extends JFrame {
     private JPanel createFormPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Employee Details"));
-        panel.setPreferredSize(new Dimension(350, 0));
+        panel.setPreferredSize(new Dimension(350, 400));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -131,29 +134,24 @@ public class EmployeeManagementFrame extends JFrame {
         cmbPosition = new JComboBox<>(positions);
         panel.add(cmbPosition, gbc);
 
-        cmbPosition.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    String selectedPosition = (String) cmbPosition.getSelectedItem();
+        cmbPosition.addItemListener(e -> {
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                String selectedPosition = (String) cmbPosition.getSelectedItem();
 
-                    if ("Employee".equals(selectedPosition)) {
-                        // Show hourly rate and hours worked fields
-                        lblHourlyRate.setVisible(true);
-                        txtHourlyRate.setVisible(true);
-                        lblSalary.setVisible(false);
-                        txtSalary.setVisible(false);
-                        txtSalary.setText("");
-                    } else if ("Payroll Admin".equals(selectedPosition) || "HR Admin".equals(selectedPosition)) {
-                        // Show salary field only
-                        lblHourlyRate.setVisible(false);
-                        txtHourlyRate.setVisible(false);
-                        txtHourlyRate.setText("");
-                        lblSalary.setVisible(true);
-                        txtSalary.setVisible(true);
-                    }
-                    updateSalaryLabels();
+                if ("Employee".equals(selectedPosition)) {
+                    lblHourlyRate.setVisible(true);
+                    txtHourlyRate.setVisible(true);
+                    lblSalary.setVisible(false);
+                    txtSalary.setVisible(false);
+                    txtSalary.setText("");
+                } else if ("Payroll Admin".equals(selectedPosition) || "HR Admin".equals(selectedPosition)) {
+                    lblHourlyRate.setVisible(false);
+                    txtHourlyRate.setVisible(false);
+                    txtHourlyRate.setText("");
+                    lblSalary.setVisible(true);
+                    txtSalary.setVisible(true);
                 }
+                updateSalaryLabels();
             }
         });
 
@@ -177,9 +175,21 @@ public class EmployeeManagementFrame extends JFrame {
         txtSalary.setVisible(false);
         panel.add(txtSalary, gbc);
 
+        return panel;
+    }
+
+    private JPanel createSalaryPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(BorderFactory.createTitledBorder("Salary Details"));
+        panel.setPreferredSize(new Dimension(350, 150));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
         // Gross Salary label
         gbc.gridx = 0;
-        gbc.gridy = 9;
+        gbc.gridy = 0;
         panel.add(new JLabel("Gross Salary:"), gbc);
         gbc.gridx = 1;
         lblGrossSalary = new JLabel("₱ 0.00");
@@ -187,7 +197,7 @@ public class EmployeeManagementFrame extends JFrame {
 
         // Deductions label
         gbc.gridx = 0;
-        gbc.gridy = 10;
+        gbc.gridy = 1;
         panel.add(new JLabel("Deductions:"), gbc);
         gbc.gridx = 1;
         lblDeductions = new JLabel("₱ 0.00");
@@ -195,7 +205,7 @@ public class EmployeeManagementFrame extends JFrame {
 
         // Net Salary label
         gbc.gridx = 0;
-        gbc.gridy = 11;
+        gbc.gridy = 2;
         panel.add(new JLabel("Net Salary:"), gbc);
         gbc.gridx = 1;
         lblNetSalary = new JLabel("₱ 0.00");
@@ -203,9 +213,6 @@ public class EmployeeManagementFrame extends JFrame {
         lblNetSalary.setForeground(new Color(0, 100, 0)); // Dark green color
         panel.add(lblNetSalary, gbc);
 
-        // Attach listeners to update computed labels when inputs change
-        attachDocumentListener(txtHourlyRate);
-        attachDocumentListener(txtSalary);
 
         return panel;
     }
@@ -351,7 +358,7 @@ public class EmployeeManagementFrame extends JFrame {
             txtPhone.setText(tableModel.getValueAt(selectedRow, 4).toString());
             cmbPosition.setSelectedItem(tableModel.getValueAt(selectedRow, 5).toString());
             txtHourlyRate.setText(tableModel.getValueAt(selectedRow, 6).toString());
-            txtSalary.setText(tableModel.getValueAt(selectedRow, 8).toString());
+            txtSalary.setText(tableModel.getValueAt(selectedRow, 7).toString());
 
             switch (cmbPosition.getSelectedItem().toString()) {
                 case "Employee":
