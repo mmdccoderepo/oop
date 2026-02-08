@@ -72,10 +72,10 @@ abstract public class Employee implements Payable {
 
     @Override
     public String toString() {
-        return String.format("Employee{id=%d, name='%s %s', position='%s', monthly salary=%.2f}",
-                id, getFirstName(), getLastName(), position, calculateMonthlySalary());
+        return String.format("Employee{id=%d, name='%s %s', position='%s', gross salary=%.2f}",
+                id, getFirstName(), getLastName(), position, computeGrossSalary());
     }
 
 
-    abstract public double calculateMonthlySalary();
+    abstract public double computeGrossSalary();
 }

@@ -1,5 +1,11 @@
 package interfaces;
 
 public interface Payable {
-    double calculateMonthlySalary();
+    double computeGrossSalary();
+
+    double computeDeductions();
+
+    default double computeNetSalary() {
+        return computeGrossSalary() - computeDeductions();
+    }
 }

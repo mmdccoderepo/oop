@@ -121,7 +121,6 @@ public class EmployeeServiceImpl implements EmployeeService {
             String phoneNumber = parts[4];
             String position = parts[5];
             double hourlyRate = Double.parseDouble(parts[6].isEmpty() ? "0" : parts[6]);
-            double hoursWorked = Double.parseDouble(parts[7].isEmpty() ? "0" : parts[7]);
             double monthlySalary = 0.0;
 
             if (parts.length > 8) {
@@ -130,7 +129,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
             switch (position) {
                 case "Employee":
-                    return new model.RegularEmployee(id, firstName, lastName, email, phoneNumber, position, hourlyRate, hoursWorked);
+                    return new model.RegularEmployee(id, firstName, lastName, email, phoneNumber, position, hourlyRate);
                 case "Payroll Admin":
                 case "HR Admin":
                     return new model.SalariedEmployee(id, firstName, lastName, email, phoneNumber, position, monthlySalary);
@@ -160,27 +159,26 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (employee instanceof RegularEmployee) {
             RegularEmployee regularEmployee = (RegularEmployee) employee;
             return String.format(
-                    "%d,%s,%s,%s,%s,%s,%.2f,%.2f",
+                    "%d,%s,%s,%s,%s,%s,%.2f",
                     regularEmployee.getId(),
                     regularEmployee.getFirstName(),
                     regularEmployee.getLastName(),
                     regularEmployee.getEmail(),
                     regularEmployee.getPhoneNumber(),
                     regularEmployee.getPosition(),
-                    regularEmployee.getHourlyRate(),
-                    regularEmployee.getHoursWorked()
+                    regularEmployee.getHourlyRate()
             );
         } else if (employee instanceof SalariedEmployee) {
             SalariedEmployee salariedEmployee = (SalariedEmployee) employee;
             return String.format(
-                    "%d,%s,%s,%s,%s,%s,,,%.2f",
+                    "%d,%s,%s,%s,%s,%s,,%.2f",
                     salariedEmployee.getId(),
                     salariedEmployee.getFirstName(),
                     salariedEmployee.getLastName(),
                     salariedEmployee.getEmail(),
                     salariedEmployee.getPhoneNumber(),
                     salariedEmployee.getPosition(),
-                    salariedEmployee.getMonthlySalary()
+                    salariedEmployee.getBasicSalary()
             );
         }
         return "";

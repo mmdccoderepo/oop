@@ -5,7 +5,11 @@ import model.Employee;
 import service.EmployeeServiceImpl;
 
 import javax.swing.*;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
@@ -27,8 +31,16 @@ public class EmployeeManagementFrame extends JFrame {
     private JComboBox<String> cmbPosition;
 
     private JTextField txtHourlyRate;
-    private JTextField txtHoursWorked;
     private JTextField txtSalary;
+
+    // Labels for input fields
+    private JLabel lblHourlyRate;
+    private JLabel lblSalary;
+
+    // New labels for computed amounts
+    private JLabel lblGrossSalary;
+    private JLabel lblDeductions;
+    private JLabel lblNetSalary;
 
     // Table
     private JTable table;
@@ -127,18 +139,20 @@ public class EmployeeManagementFrame extends JFrame {
 
                     if ("Employee".equals(selectedPosition)) {
                         // Show hourly rate and hours worked fields
-                        txtHourlyRate.setEnabled(true);
-                        txtHoursWorked.setEnabled(true);
-                        txtSalary.setEnabled(false);
+                        lblHourlyRate.setVisible(true);
+                        txtHourlyRate.setVisible(true);
+                        lblSalary.setVisible(false);
+                        txtSalary.setVisible(false);
                         txtSalary.setText("");
                     } else if ("Payroll Admin".equals(selectedPosition) || "HR Admin".equals(selectedPosition)) {
                         // Show salary field only
-                        txtHourlyRate.setEnabled(false);
-                        txtHoursWorked.setEnabled(false);
+                        lblHourlyRate.setVisible(false);
+                        txtHourlyRate.setVisible(false);
                         txtHourlyRate.setText("");
-                        txtHoursWorked.setText("");
-                        txtSalary.setEnabled(true);
+                        lblSalary.setVisible(true);
+                        txtSalary.setVisible(true);
                     }
+                    updateSalaryLabels();
                 }
             }
         });
@@ -146,26 +160,52 @@ public class EmployeeManagementFrame extends JFrame {
         // Hourly Rate
         gbc.gridx = 0;
         gbc.gridy = 6;
-        panel.add(new JLabel("Hourly Rate:"), gbc);
+        lblHourlyRate = new JLabel("Hourly Rate:");
+        panel.add(lblHourlyRate, gbc);
         gbc.gridx = 1;
         txtHourlyRate = new JTextField(20);
         panel.add(txtHourlyRate, gbc);
 
-        // Hours Worked
-        gbc.gridx = 0;
-        gbc.gridy = 7;
-        panel.add(new JLabel("Hours Worked:"), gbc);
-        gbc.gridx = 1;
-        txtHoursWorked = new JTextField(20);
-        panel.add(txtHoursWorked, gbc);
-
         // Salary
         gbc.gridx = 0;
-        gbc.gridy = 8;
-        panel.add(new JLabel("Salary:"), gbc);
+        gbc.gridy = 7;
+        lblSalary = new JLabel("Basic Salary:");
+        lblSalary.setVisible(false);
+        panel.add(lblSalary, gbc);
         gbc.gridx = 1;
         txtSalary = new JTextField(20);
+        txtSalary.setVisible(false);
         panel.add(txtSalary, gbc);
+
+        // Gross Salary label
+        gbc.gridx = 0;
+        gbc.gridy = 9;
+        panel.add(new JLabel("Gross Salary:"), gbc);
+        gbc.gridx = 1;
+        lblGrossSalary = new JLabel("₱ 0.00");
+        panel.add(lblGrossSalary, gbc);
+
+        // Deductions label
+        gbc.gridx = 0;
+        gbc.gridy = 10;
+        panel.add(new JLabel("Deductions:"), gbc);
+        gbc.gridx = 1;
+        lblDeductions = new JLabel("₱ 0.00");
+        panel.add(lblDeductions, gbc);
+
+        // Net Salary label
+        gbc.gridx = 0;
+        gbc.gridy = 11;
+        panel.add(new JLabel("Net Salary:"), gbc);
+        gbc.gridx = 1;
+        lblNetSalary = new JLabel("₱ 0.00");
+        lblNetSalary.setFont(lblNetSalary.getFont().deriveFont(Font.BOLD, 16f));
+        lblNetSalary.setForeground(new Color(0, 100, 0)); // Dark green color
+        panel.add(lblNetSalary, gbc);
+
+        // Attach listeners to update computed labels when inputs change
+        attachDocumentListener(txtHourlyRate);
+        attachDocumentListener(txtSalary);
 
         return panel;
     }
@@ -182,7 +222,7 @@ public class EmployeeManagementFrame extends JFrame {
         panel.add(topPanel, BorderLayout.NORTH);
 
         // Table
-        String[] columns = {"ID", "First Name", "Last Name", "Email", "Phone", "Position", "Hourly Rate", "Hours Worked", "Salary"};
+        String[] columns = {"ID", "First Name", "Last Name", "Email", "Phone", "Position", "Hourly Rate", "Monthly Salary"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -200,6 +240,12 @@ public class EmployeeManagementFrame extends JFrame {
                 }
             }
         });
+
+        TableColumnModel columnModel = table.getColumnModel();
+        TableColumn hourlyRateCol = table.getColumn("Hourly Rate");
+        TableColumn salaryCol = table.getColumn("Monthly Salary");
+        columnModel.removeColumn(hourlyRateCol);
+        columnModel.removeColumn(salaryCol);
 
         JScrollPane scrollPane = new JScrollPane(table);
         panel.add(scrollPane, BorderLayout.CENTER);
@@ -305,22 +351,24 @@ public class EmployeeManagementFrame extends JFrame {
             txtPhone.setText(tableModel.getValueAt(selectedRow, 4).toString());
             cmbPosition.setSelectedItem(tableModel.getValueAt(selectedRow, 5).toString());
             txtHourlyRate.setText(tableModel.getValueAt(selectedRow, 6).toString());
-            txtHoursWorked.setText(tableModel.getValueAt(selectedRow, 7).toString());
             txtSalary.setText(tableModel.getValueAt(selectedRow, 8).toString());
 
             switch (cmbPosition.getSelectedItem().toString()) {
                 case "Employee":
-                    txtHourlyRate.setEnabled(true);
-                    txtHoursWorked.setEnabled(true);
-                    txtSalary.setEnabled(false);
+                    lblHourlyRate.setVisible(true);
+                    txtHourlyRate.setVisible(true);
+                    lblSalary.setVisible(false);
+                    txtSalary.setVisible(false);
                     break;
                 case "Payroll Admin":
                 case "HR Admin":
-                    txtHourlyRate.setEnabled(false);
-                    txtHoursWorked.setEnabled(false);
-                    txtSalary.setEnabled(true);
+                    lblHourlyRate.setVisible(false);
+                    txtHourlyRate.setVisible(false);
+                    lblSalary.setVisible(true);
+                    txtSalary.setVisible(true);
                     break;
             }
+            updateSalaryLabels();
         }
     }
 
@@ -345,15 +393,13 @@ public class EmployeeManagementFrame extends JFrame {
                 case "Employee":
                     model.RegularEmployee regularEmp = (model.RegularEmployee) emp;
                     row.add(String.format("%.2f", regularEmp.getHourlyRate()));
-                    row.add(String.format("%.2f", regularEmp.getHoursWorked()));
-                    row.add(String.format("%.2f", regularEmp.calculateMonthlySalary()));
+                    row.add("");
                     break;
                 case "Payroll Admin":
                 case "HR Admin":
                     model.SalariedEmployee salariedEmp = (model.SalariedEmployee) emp;
                     row.add("");
-                    row.add("");
-                    row.add(String.format("%.2f", salariedEmp.calculateMonthlySalary()));
+                    row.add(String.format("%.2f", salariedEmp.getBasicSalary()));
                     break;
             }
             tableModel.addRow(row.toArray());
@@ -375,8 +421,7 @@ public class EmployeeManagementFrame extends JFrame {
         switch (position) {
             case "Employee":
                 double hourlyRate = Double.parseDouble(txtHourlyRate.getText().isEmpty() ? "0" : txtHourlyRate.getText().trim());
-                double hoursWorked = Double.parseDouble(txtHoursWorked.getText().isEmpty() ? "0" : txtHoursWorked.getText().trim());
-                return new model.RegularEmployee(id, firstName, lastName, email, phone, position, hourlyRate, hoursWorked);
+                return new model.RegularEmployee(id, firstName, lastName, email, phone, position, hourlyRate);
             case "Payroll Admin":
             case "HR Admin":
                 double monthlySalary = Double.parseDouble(txtSalary.getText().isEmpty() ? "0" : txtSalary.getText().trim());
@@ -395,9 +440,53 @@ public class EmployeeManagementFrame extends JFrame {
         cmbPosition.setSelectedIndex(0);
 
         txtHourlyRate.setText("");
-        txtHoursWorked.setText("");
         txtSalary.setText("");
 
+        lblGrossSalary.setText("₱ 0.00");
+        lblDeductions.setText("₱ 0.00");
+        lblNetSalary.setText("₱ 0.00");
+
         table.clearSelection();
+    }
+
+    private void attachDocumentListener(JTextField field) {
+        field.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateSalaryLabels();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateSalaryLabels();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateSalaryLabels();
+            }
+        });
+    }
+
+    private void updateSalaryLabels() {
+        double gross = 0.0;
+        try {
+            String pos = (cmbPosition.getSelectedItem() == null) ? "" : cmbPosition.getSelectedItem().toString();
+            if ("Employee".equals(pos)) {
+                double hourly = Double.parseDouble(txtHourlyRate.getText().isEmpty() ? "0" : txtHourlyRate.getText().trim());
+                gross = hourly * 160;
+            } else if ("Payroll Admin".equals(pos) || "HR Admin".equals(pos)) {
+                gross = Double.parseDouble(txtSalary.getText().isEmpty() ? "0" : txtSalary.getText().trim());
+            }
+        } catch (NumberFormatException ex) {
+            gross = 0.0;
+        }
+
+        double deductions = gross * 0.10;
+        double net = gross - deductions;
+
+        lblGrossSalary.setText(String.format("₱ %.2f", gross));
+        lblDeductions.setText(String.format("₱ %.2f", deductions));
+        lblNetSalary.setText(String.format("₱ %.2f", net));
     }
 }
