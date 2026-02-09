@@ -1,23 +1,36 @@
 package model;
 
-import interfaces.Payable;
-
-abstract public class Employee implements Payable {
+abstract public class Employee {
     private int id;
     private String firstName;
     private String lastName;
     private String email;
     private String phoneNumber;
-    private String position;
+    private String address;
+    private String employeeType;
+    private String positionLevel;
+    private String designation;
+    private String sssNumber;
+    private String philHealthNumber;
+    private String tin;
+    private String pagIbigNumber;
 
-    public Employee(int id, String firstName, String lastName, String email,
-                    String phoneNumber, String position) {
+    public Employee(int id, String firstName, String lastName, String email, String phoneNumber, String address,
+                    String employeeType, String positionLevel, String designation, String sssNumber,
+                    String philHealthNumber, String tin, String pagIbigNumber) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.phoneNumber = phoneNumber;
-        this.position = position;
+        this.address = address;
+        this.employeeType = employeeType;
+        this.positionLevel = positionLevel;
+        this.designation = designation;
+        this.sssNumber = sssNumber;
+        this.philHealthNumber = philHealthNumber;
+        this.tin = tin;
+        this.pagIbigNumber = pagIbigNumber;
     }
 
     // Getters
@@ -41,8 +54,36 @@ abstract public class Employee implements Payable {
         return phoneNumber;
     }
 
-    public String getPosition() {
-        return position;
+    public String getAddress() {
+        return address;
+    }
+
+    public String getEmployeeType() {
+        return employeeType;
+    }
+
+    public String getPositionLevel() {
+        return positionLevel;
+    }
+
+    public String getDesignation() {
+        return designation;
+    }
+
+    public String getSssNumber() {
+        return sssNumber;
+    }
+
+    public String getPhilHealthNumber() {
+        return philHealthNumber;
+    }
+
+    public String getTin() {
+        return tin;
+    }
+
+    public String getPagIbigNumber() {
+        return pagIbigNumber;
     }
 
     // Setters
@@ -66,16 +107,35 @@ abstract public class Employee implements Payable {
         this.phoneNumber = phoneNumber;
     }
 
-    public void setPosition(String position) {
-        this.position = position;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
-    @Override
-    public String toString() {
-        return String.format("Employee{id=%d, name='%s %s', position='%s', gross salary=%.2f}",
-                id, getFirstName(), getLastName(), position, computeGrossSalary());
+    public void setEmployeeType(String employeeType) {
+        this.employeeType = employeeType;
     }
 
+    public void setPositionLevel(String positionLevel) {
+        this.positionLevel = positionLevel;
+    }
 
-    abstract public double computeGrossSalary();
+    public void setDesignation(String designation) {
+        this.designation = designation;
+    }
+
+    public void setSssNumber(String sssNumber) {
+        this.sssNumber = sssNumber;
+    }
+
+    public void setPhilHealthNumber(String philHealthNumber) {
+        this.philHealthNumber = philHealthNumber;
+    }
+
+    public void setTin(String tin) {
+        this.tin = tin;
+    }
+
+    public void setPagIbigNumber(String pagIbigNumber) {
+        this.pagIbigNumber = pagIbigNumber;
+    }
 }

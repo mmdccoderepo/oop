@@ -1,8 +1,11 @@
 package ui;
 
-import interfaces.EmployeeService;
+import dao.CSVEmployeeDAO;
+import dao.EmployeeDAO;
 import model.Employee;
-import service.EmployeeServiceImpl;
+import model.FullTimeEmployee;
+import model.PartTimeEmployee;
+import service.PayrollService;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -19,7 +22,7 @@ import java.util.List;
 
 public class EmployeeManagementFrame extends JFrame {
 
-    private final EmployeeService EmployeeService;
+    private final EmployeeDAO EmployeeDAO;
 
     // Form components
     private JTextField txtId;
@@ -27,8 +30,14 @@ public class EmployeeManagementFrame extends JFrame {
     private JTextField txtLastName;
     private JTextField txtEmail;
     private JTextField txtPhone;
-    private JComboBox<String> cmbPosition;
-
+    private JComboBox<String> cmbEmployeeType;
+    private JComboBox<String> cmbPositionLevel;
+    private JComboBox<String> cmbDesignation;
+    private JTextField txtAddress;
+    private JTextField txtSssNumber;
+    private JTextField txtPhilHealthNumber;
+    private JTextField txtTin;
+    private JTextField txtPagIbigNumber;
     private JTextField txtHourlyRate;
     private JTextField txtSalary;
 
@@ -36,6 +45,7 @@ public class EmployeeManagementFrame extends JFrame {
     private JLabel lblSalary;
 
     private JLabel lblGrossSalary;
+    private JLabel lblAllowances;
     private JLabel lblDeductions;
     private JLabel lblNetSalary;
 
@@ -51,20 +61,26 @@ public class EmployeeManagementFrame extends JFrame {
     private JButton btnRefresh;
 
     public EmployeeManagementFrame() {
-        EmployeeService = new EmployeeServiceImpl();
+        EmployeeDAO = new CSVEmployeeDAO();
         initializeUI();
         loadTableData();
     }
 
     private void initializeUI() {
         setTitle("Employee Management");
-        setSize(1000, 600);
+        setSize(1400, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
-        leftPanel.add(createFormPanel());
+
+        // Add form panel in a scroll pane
+        JScrollPane formScrollPane = new JScrollPane(createFormPanel());
+        formScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        formScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        leftPanel.add(formScrollPane);
+
         leftPanel.add(Box.createVerticalStrut(10)); // Add spacing between panels
         leftPanel.add(createSalaryPanel());
 
@@ -78,15 +94,18 @@ public class EmployeeManagementFrame extends JFrame {
     private JPanel createFormPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Employee Details"));
-        panel.setPreferredSize(new Dimension(350, 400));
+        panel.setPreferredSize(new Dimension(450, 700));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
+
+        int row = 0;
 
         // ID
         gbc.gridx = 0;
-        gbc.gridy = 0;
+        gbc.gridy = row;
         panel.add(new JLabel("ID:"), gbc);
         gbc.gridx = 1;
         txtId = new JTextField(20);
@@ -94,57 +113,71 @@ public class EmployeeManagementFrame extends JFrame {
         panel.add(txtId, gbc);
 
         // First Name
+        row++;
         gbc.gridx = 0;
-        gbc.gridy = 1;
+        gbc.gridy = row;
         panel.add(new JLabel("First Name:"), gbc);
         gbc.gridx = 1;
         txtFirstName = new JTextField(20);
         panel.add(txtFirstName, gbc);
 
         // Last Name
+        row++;
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = row;
         panel.add(new JLabel("Last Name:"), gbc);
         gbc.gridx = 1;
         txtLastName = new JTextField(20);
         panel.add(txtLastName, gbc);
 
         // Email
+        row++;
         gbc.gridx = 0;
-        gbc.gridy = 3;
+        gbc.gridy = row;
         panel.add(new JLabel("Email:"), gbc);
         gbc.gridx = 1;
         txtEmail = new JTextField(20);
         panel.add(txtEmail, gbc);
 
         // Phone
+        row++;
         gbc.gridx = 0;
-        gbc.gridy = 4;
+        gbc.gridy = row;
         panel.add(new JLabel("Phone:"), gbc);
         gbc.gridx = 1;
         txtPhone = new JTextField(20);
         panel.add(txtPhone, gbc);
 
-        // Position
+        // Address
+        row++;
         gbc.gridx = 0;
-        gbc.gridy = 5;
+        gbc.gridy = row;
+        panel.add(new JLabel("Address:"), gbc);
+        gbc.gridx = 1;
+        txtAddress = new JTextField(20);
+        panel.add(txtAddress, gbc);
+
+        // Employee Type
+        row++;
+        gbc.gridx = 0;
+        gbc.gridy = row;
         panel.add(new JLabel("Position:"), gbc);
         gbc.gridx = 1;
-        String[] positions = {"Employee", "Payroll Admin", "HR Admin"};
-        cmbPosition = new JComboBox<>(positions);
-        panel.add(cmbPosition, gbc);
+        String[] positions = {"Full-Time", "Part-Time"};
+        cmbEmployeeType = new JComboBox<>(positions);
+        panel.add(cmbEmployeeType, gbc);
 
-        cmbPosition.addItemListener(e -> {
+        cmbEmployeeType.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                String selectedPosition = (String) cmbPosition.getSelectedItem();
+                String selectedEmployeeType = (String) cmbEmployeeType.getSelectedItem();
 
-                if ("Employee".equals(selectedPosition)) {
+                if ("Part-Time".equals(selectedEmployeeType)) {
                     lblHourlyRate.setVisible(true);
                     txtHourlyRate.setVisible(true);
                     lblSalary.setVisible(false);
                     txtSalary.setVisible(false);
                     txtSalary.setText("");
-                } else if ("Payroll Admin".equals(selectedPosition) || "HR Admin".equals(selectedPosition)) {
+                } else if ("Full-Time".equals(selectedEmployeeType)) {
                     lblHourlyRate.setVisible(false);
                     txtHourlyRate.setVisible(false);
                     txtHourlyRate.setText("");
@@ -156,24 +189,85 @@ public class EmployeeManagementFrame extends JFrame {
         });
 
         // Hourly Rate
+        row++;
         gbc.gridx = 0;
-        gbc.gridy = 6;
+        gbc.gridy = row;
         lblHourlyRate = new JLabel("Hourly Rate:");
         panel.add(lblHourlyRate, gbc);
         gbc.gridx = 1;
         txtHourlyRate = new JTextField(20);
+        attachDocumentListener(txtHourlyRate);
         panel.add(txtHourlyRate, gbc);
 
-        // Salary
+        // Basic Salary
+        row++;
         gbc.gridx = 0;
-        gbc.gridy = 7;
+        gbc.gridy = row;
         lblSalary = new JLabel("Basic Salary:");
         lblSalary.setVisible(false);
         panel.add(lblSalary, gbc);
         gbc.gridx = 1;
         txtSalary = new JTextField(20);
         txtSalary.setVisible(false);
+        attachDocumentListener(txtSalary);
         panel.add(txtSalary, gbc);
+
+        // Position Level
+        row++;
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        panel.add(new JLabel("Position Level:"), gbc);
+        gbc.gridx = 1;
+        String[] positionLevels = {"Managerial", "Supervisory", "Rank and File"};
+        cmbPositionLevel = new JComboBox<>(positionLevels);
+        panel.add(cmbPositionLevel, gbc);
+
+        // Designation
+        row++;
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        panel.add(new JLabel("Designation:"), gbc);
+        gbc.gridx = 1;
+        String[] designations = {"Employee", "Payroll Admin", "HR Admin"};
+        cmbDesignation = new JComboBox<>(designations);
+        panel.add(cmbDesignation, gbc);
+
+        // SSS Number
+        row++;
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        panel.add(new JLabel("SSS Number:"), gbc);
+        gbc.gridx = 1;
+        txtSssNumber = new JTextField(20);
+        panel.add(txtSssNumber, gbc);
+
+        // PhilHealth Number
+        row++;
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        panel.add(new JLabel("PhilHealth Number:"), gbc);
+        gbc.gridx = 1;
+        txtPhilHealthNumber = new JTextField(20);
+        panel.add(txtPhilHealthNumber, gbc);
+
+        // TIN
+        row++;
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        panel.add(new JLabel("TIN:"), gbc);
+        gbc.gridx = 1;
+        txtTin = new JTextField(20);
+        panel.add(txtTin, gbc);
+
+        // Pag-IBIG Number
+        row++;
+        gbc.gridx = 0;
+        gbc.gridy = row;
+        panel.add(new JLabel("Pag-IBIG Number:"), gbc);
+        gbc.gridx = 1;
+        txtPagIbigNumber = new JTextField(20);
+        panel.add(txtPagIbigNumber, gbc);
+
 
         return panel;
     }
@@ -181,7 +275,7 @@ public class EmployeeManagementFrame extends JFrame {
     private JPanel createSalaryPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Salary Details"));
-        panel.setPreferredSize(new Dimension(350, 150));
+        panel.setPreferredSize(new Dimension(450, 180));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
@@ -195,17 +289,27 @@ public class EmployeeManagementFrame extends JFrame {
         lblGrossSalary = new JLabel("₱ 0.00");
         panel.add(lblGrossSalary, gbc);
 
-        // Deductions label
+        // Allowances label
         gbc.gridx = 0;
         gbc.gridy = 1;
+        panel.add(new JLabel("Total Allowances:"), gbc);
+        gbc.gridx = 1;
+        lblAllowances = new JLabel("₱ 0.00");
+        lblAllowances.setForeground(new Color(0, 100, 0)); // Dark green
+        panel.add(lblAllowances, gbc);
+
+        // Deductions label
+        gbc.gridx = 0;
+        gbc.gridy = 2;
         panel.add(new JLabel("Deductions:"), gbc);
         gbc.gridx = 1;
         lblDeductions = new JLabel("₱ 0.00");
+        lblDeductions.setForeground(new Color(150, 0, 0)); // Dark red
         panel.add(lblDeductions, gbc);
 
         // Net Salary label
         gbc.gridx = 0;
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         panel.add(new JLabel("Net Salary:"), gbc);
         gbc.gridx = 1;
         lblNetSalary = new JLabel("₱ 0.00");
@@ -229,7 +333,7 @@ public class EmployeeManagementFrame extends JFrame {
         panel.add(topPanel, BorderLayout.NORTH);
 
         // Table
-        String[] columns = {"ID", "First Name", "Last Name", "Email", "Phone", "Position", "Hourly Rate", "Monthly Salary"};
+        String[] columns = {"ID", "First Name", "Last Name", "Email", "Phone", "Address", "Position Level", "Designation", "SSS Number", "PhilHealth Number", "TIN", "Pag-IBIG Number", "Hourly Rate", "Monthly Salary"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -286,7 +390,7 @@ public class EmployeeManagementFrame extends JFrame {
             Employee employee = getEmployeeFromForm();
             employee.setId(0);
 
-            if (EmployeeService.create(employee)) {
+            if (EmployeeDAO.create(employee)) {
                 JOptionPane.showMessageDialog(this, "Employee created successfully!");
                 loadTableData();
                 clearForm();
@@ -308,7 +412,7 @@ public class EmployeeManagementFrame extends JFrame {
 
             Employee employee = getEmployeeFromForm();
 
-            if (EmployeeService.update(employee)) {
+            if (EmployeeDAO.update(employee)) {
                 JOptionPane.showMessageDialog(this, "Employee updated successfully!");
                 loadTableData();
                 clearForm();
@@ -335,7 +439,7 @@ public class EmployeeManagementFrame extends JFrame {
             if (confirm == JOptionPane.YES_OPTION) {
                 int id = Integer.parseInt(txtId.getText());
 
-                if (EmployeeService.delete(id)) {
+                if (EmployeeDAO.delete(id)) {
                     JOptionPane.showMessageDialog(this, "Employee deleted successfully!");
                     loadTableData();
                     clearForm();
@@ -351,36 +455,50 @@ public class EmployeeManagementFrame extends JFrame {
     private void selectEmployee() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow >= 0) {
-            txtId.setText(tableModel.getValueAt(selectedRow, 0).toString());
-            txtFirstName.setText(tableModel.getValueAt(selectedRow, 1).toString());
-            txtLastName.setText(tableModel.getValueAt(selectedRow, 2).toString());
-            txtEmail.setText(tableModel.getValueAt(selectedRow, 3).toString());
-            txtPhone.setText(tableModel.getValueAt(selectedRow, 4).toString());
-            cmbPosition.setSelectedItem(tableModel.getValueAt(selectedRow, 5).toString());
-            txtHourlyRate.setText(tableModel.getValueAt(selectedRow, 6).toString());
-            txtSalary.setText(tableModel.getValueAt(selectedRow, 7).toString());
+            int id = Integer.parseInt(tableModel.getValueAt(selectedRow, 0).toString());
+            Employee employee = EmployeeDAO.read(id);
 
-            switch (cmbPosition.getSelectedItem().toString()) {
-                case "Employee":
+            if (employee != null) {
+                txtId.setText(String.valueOf(employee.getId()));
+                txtFirstName.setText(employee.getFirstName());
+                txtLastName.setText(employee.getLastName());
+                txtEmail.setText(employee.getEmail());
+                txtPhone.setText(employee.getPhoneNumber());
+                txtAddress.setText(employee.getAddress());
+                cmbEmployeeType.setSelectedItem(employee.getEmployeeType());
+                cmbPositionLevel.setSelectedItem(employee.getPositionLevel());
+                cmbDesignation.setSelectedItem(employee.getDesignation());
+                txtSssNumber.setText(employee.getSssNumber());
+                txtPhilHealthNumber.setText(employee.getPhilHealthNumber());
+                txtTin.setText(employee.getTin());
+                txtPagIbigNumber.setText(employee.getPagIbigNumber());
+
+                // Set salary fields based on employee type
+                if (employee instanceof PartTimeEmployee) {
+                    PartTimeEmployee regEmp = (PartTimeEmployee) employee;
+                    txtHourlyRate.setText(String.format("%.2f", regEmp.getHourlyRate()));
+                    txtSalary.setText("");
                     lblHourlyRate.setVisible(true);
                     txtHourlyRate.setVisible(true);
                     lblSalary.setVisible(false);
                     txtSalary.setVisible(false);
-                    break;
-                case "Payroll Admin":
-                case "HR Admin":
+                } else if (employee instanceof FullTimeEmployee) {
+                    FullTimeEmployee salEmp = (FullTimeEmployee) employee;
+                    txtSalary.setText(String.format("%.2f", salEmp.getBasicSalary()));
+                    txtHourlyRate.setText("");
                     lblHourlyRate.setVisible(false);
                     txtHourlyRate.setVisible(false);
                     lblSalary.setVisible(true);
                     txtSalary.setVisible(true);
-                    break;
+                }
+
+                updateSalaryLabels();
             }
-            updateSalaryLabels();
         }
     }
 
     private void loadTableData() {
-        List<Employee> employees = EmployeeService.getAll();
+        List<Employee> employees = EmployeeDAO.getAll();
         updateTable(employees);
     }
 
@@ -393,18 +511,23 @@ public class EmployeeManagementFrame extends JFrame {
                     emp.getLastName(),
                     emp.getEmail(),
                     emp.getPhoneNumber(),
-                    emp.getPosition()
+                    emp.getEmployeeType(),
+                    emp.getPositionLevel(),
+                    emp.getDesignation(),
+                    emp.getSssNumber(),
+                    emp.getPhilHealthNumber(),
+                    emp.getTin(),
+                    emp.getPagIbigNumber()
             ));
 
-            switch (emp.getPosition()) {
-                case "Employee":
-                    model.RegularEmployee regularEmp = (model.RegularEmployee) emp;
+            switch (emp.getEmployeeType()) {
+                case "Part-Time":
+                    PartTimeEmployee regularEmp = (PartTimeEmployee) emp;
                     row.add(String.format("%.2f", regularEmp.getHourlyRate()));
                     row.add("");
                     break;
-                case "Payroll Admin":
-                case "HR Admin":
-                    model.SalariedEmployee salariedEmp = (model.SalariedEmployee) emp;
+                case "Full-Time":
+                    FullTimeEmployee salariedEmp = (FullTimeEmployee) emp;
                     row.add("");
                     row.add(String.format("%.2f", salariedEmp.getBasicSalary()));
                     break;
@@ -419,23 +542,34 @@ public class EmployeeManagementFrame extends JFrame {
         String lastName = txtLastName.getText().trim();
         String email = txtEmail.getText().trim();
         String phone = txtPhone.getText().trim();
-        String position = (cmbPosition.getSelectedItem() == null) ? "" : cmbPosition.getSelectedItem().toString().trim();
+        String address = txtAddress.getText().trim();
+        String employeeType = (cmbEmployeeType.getSelectedItem() == null) ? "" : cmbEmployeeType.getSelectedItem().toString().trim();
+        String positionLevel = (cmbPositionLevel.getSelectedItem() == null) ? "" : cmbPositionLevel.getSelectedItem().toString().trim();
+        String designation = (cmbDesignation.getSelectedItem() == null) ? "" : cmbDesignation.getSelectedItem().toString().trim();
+        String sssNumber = txtSssNumber.getText().trim();
+        String philHealthNumber = txtPhilHealthNumber.getText().trim();
+        String tin = txtTin.getText().trim();
+        String pagIbigNumber = txtPagIbigNumber.getText().trim();
 
-        if (firstName.isEmpty() || lastName.isEmpty()) {
-            throw new IllegalArgumentException("First name and last name are required!");
-        }
+//        if (firstName.isEmpty() || lastName.isEmpty()) {
+//            throw new IllegalArgumentException("First name and last name are required!");
+//        }
 
-        switch (position) {
-            case "Employee":
+        Employee employee;
+        switch (employeeType) {
+            case "Part-Time":
                 double hourlyRate = Double.parseDouble(txtHourlyRate.getText().isEmpty() ? "0" : txtHourlyRate.getText().trim());
-                return new model.RegularEmployee(id, firstName, lastName, email, phone, position, hourlyRate);
-            case "Payroll Admin":
-            case "HR Admin":
+                employee = new PartTimeEmployee(id, firstName, lastName, email, phone, address, employeeType, positionLevel, designation, sssNumber, philHealthNumber, tin, pagIbigNumber, hourlyRate);
+                break;
+            case "Full-Time":
                 double monthlySalary = Double.parseDouble(txtSalary.getText().isEmpty() ? "0" : txtSalary.getText().trim());
-                return new model.SalariedEmployee(id, firstName, lastName, email, phone, position, monthlySalary);
+                employee = new FullTimeEmployee(id, firstName, lastName, email, phone, address, employeeType, positionLevel, designation, sssNumber, philHealthNumber, tin, pagIbigNumber, monthlySalary);
+                break;
             default:
-                throw new IllegalArgumentException("Invalid position! Must be 'Employee', 'Payroll Admin', or 'HR Admin'.");
+                throw new IllegalArgumentException("Invalid employee type!");
         }
+
+        return employee;
     }
 
     private void clearForm() {
@@ -444,12 +578,25 @@ public class EmployeeManagementFrame extends JFrame {
         txtLastName.setText("");
         txtEmail.setText("");
         txtPhone.setText("");
-        cmbPosition.setSelectedIndex(0);
-
+        txtAddress.setText("");
+        cmbEmployeeType.setSelectedIndex(0);
+        cmbPositionLevel.setSelectedIndex(0);
+        cmbDesignation.setSelectedIndex(0);
+        txtSssNumber.setText("");
+        txtPhilHealthNumber.setText("");
+        txtTin.setText("");
+        txtPagIbigNumber.setText("");
         txtHourlyRate.setText("");
         txtSalary.setText("");
 
+        // Clear government IDs
+        txtSssNumber.setText("");
+        txtPhilHealthNumber.setText("");
+        txtTin.setText("");
+        txtPagIbigNumber.setText("");
+
         lblGrossSalary.setText("₱ 0.00");
+        lblAllowances.setText("₱ 0.00");
         lblDeductions.setText("₱ 0.00");
         lblNetSalary.setText("₱ 0.00");
 
@@ -476,24 +623,22 @@ public class EmployeeManagementFrame extends JFrame {
     }
 
     private void updateSalaryLabels() {
-        double gross = 0.0;
-        try {
-            String pos = (cmbPosition.getSelectedItem() == null) ? "" : cmbPosition.getSelectedItem().toString();
-            if ("Employee".equals(pos)) {
-                double hourly = Double.parseDouble(txtHourlyRate.getText().isEmpty() ? "0" : txtHourlyRate.getText().trim());
-                gross = hourly * 160;
-            } else if ("Payroll Admin".equals(pos) || "HR Admin".equals(pos)) {
-                gross = Double.parseDouble(txtSalary.getText().isEmpty() ? "0" : txtSalary.getText().trim());
-            }
-        } catch (NumberFormatException ex) {
-            gross = 0.0;
+        PayrollService payrollService;
+        if ("Part-Time".equals(cmbEmployeeType.getSelectedItem())) {
+            payrollService = new service.PartTimePayrollService(new dao.CSVAllowanceDAO(), new dao.CSVDeductionDAO());
+        } else {
+            payrollService = new service.FullTimePayrollService(new dao.CSVAllowanceDAO(), new dao.CSVDeductionDAO());
         }
 
-        double deductions = gross * 0.10;
-        double net = gross - deductions;
+        Employee employee = getEmployeeFromForm();
+        double gross = payrollService.computeGrossSalary(employee);
+        double totalAllowances = payrollService.computeAllowances(employee);
+        double totalDeductions = payrollService.computeDeductions(employee);
+        double net = gross + totalAllowances - totalDeductions;
 
         lblGrossSalary.setText(String.format("₱ %.2f", gross));
-        lblDeductions.setText(String.format("₱ %.2f", deductions));
+        lblAllowances.setText(String.format("₱ %.2f", totalAllowances));
+        lblDeductions.setText(String.format("₱ %.2f", totalDeductions));
         lblNetSalary.setText(String.format("₱ %.2f", net));
     }
 }

@@ -1,0 +1,10 @@
+positionLevel,name,amount
+RANK_AND_FILE,Rice Subsidy,1500.0
+RANK_AND_FILE,Phone Allowance,800.0
+RANK_AND_FILE,Clothing Allowance,1000.0
+SUPERVISORY,Rice Subsidy,2000.0
+SUPERVISORY,Phone Allowance,1200.0
+SUPERVISORY,Clothing Allowance,1500.0
+MANAGERIAL,Rice Subsidy,2500.0
+MANAGERIAL,Phone Allowance,1500.0
+MANAGERIAL,Clothing Allowance,2000.0

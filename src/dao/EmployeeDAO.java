@@ -1,10 +1,10 @@
-package interfaces;
+package dao;
 
 import model.Employee;
 
 import java.util.List;
 
-public interface EmployeeService {
+public interface EmployeeDAO {
     boolean create(Employee employee);
 
     Employee read(int id);

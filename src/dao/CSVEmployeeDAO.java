@@ -1,18 +1,17 @@
-package service;
+package dao;
 
-import interfaces.EmployeeService;
 import model.Employee;
-import model.RegularEmployee;
-import model.SalariedEmployee;
+import model.FullTimeEmployee;
+import model.PartTimeEmployee;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EmployeeServiceImpl implements EmployeeService {
+public class CSVEmployeeDAO implements EmployeeDAO {
     private final String filePath = getResourceFilePath("employees.csv");
 
-    public EmployeeServiceImpl() {
+    public CSVEmployeeDAO() {
     }
 
     @Override
@@ -111,7 +110,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     private Employee csvToEmployee(String line) {
-        String[] parts = line.split(",");
+        String[] parts = line.split(",", -1); // -1 to keep empty trailing fields
 
         try {
             int id = Integer.parseInt(parts[0]);
@@ -119,23 +118,32 @@ public class EmployeeServiceImpl implements EmployeeService {
             String lastName = parts[2];
             String email = parts[3];
             String phoneNumber = parts[4];
-            String position = parts[5];
-            double hourlyRate = Double.parseDouble(parts[6].isEmpty() ? "0" : parts[6]);
-            double basicSalary = 0.0;
+            String address = parts[5];
+            String employeeType = parts[6];
+            String positionLevel = parts[7];
+            String designation = parts[8];
+            String sssNumber = parts[9];
+            String philHealthNumber = parts[10];
+            String tin = parts[11];
+            String pagIbigNumber = parts[12];
 
-            if (parts.length > 7 && !parts[7].isEmpty()) {
-                basicSalary = Double.parseDouble(parts[7]);
-            }
+            double hourlyRate = parts.length > 13 && !parts[13].isEmpty() ? Double.parseDouble(parts[13]) : 0.0;
+            double basicSalary = parts.length > 14 && !parts[14].isEmpty() ? Double.parseDouble(parts[14]) : 0.0;
 
-            switch (position) {
-                case "Employee":
-                    return new model.RegularEmployee(id, firstName, lastName, email, phoneNumber, position, hourlyRate);
-                case "Payroll Admin":
-                case "HR Admin":
-                    return new model.SalariedEmployee(id, firstName, lastName, email, phoneNumber, position, basicSalary);
+
+            Employee employee = null;
+            switch (employeeType) {
+                case "Part-Time":
+                    employee = new PartTimeEmployee(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, designation, sssNumber, philHealthNumber, tin, pagIbigNumber, hourlyRate);
+                    break;
+                case "Full-Time":
+                    employee = new FullTimeEmployee(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, designation, sssNumber, philHealthNumber, tin, pagIbigNumber, basicSalary);
+                    break;
                 default:
                     return null;
             }
+
+            return employee;
         } catch (NumberFormatException e) {
             e.printStackTrace();
             return null;
@@ -156,32 +164,35 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     private String employeeToCsv(Employee employee) {
-        if (employee instanceof RegularEmployee) {
-            RegularEmployee regularEmployee = (RegularEmployee) employee;
-            return String.format(
-                    "%d,%s,%s,%s,%s,%s,%.2f",
-                    regularEmployee.getId(),
-                    regularEmployee.getFirstName(),
-                    regularEmployee.getLastName(),
-                    regularEmployee.getEmail(),
-                    regularEmployee.getPhoneNumber(),
-                    regularEmployee.getPosition(),
-                    regularEmployee.getHourlyRate()
-            );
-        } else if (employee instanceof SalariedEmployee) {
-            SalariedEmployee salariedEmployee = (SalariedEmployee) employee;
-            return String.format(
-                    "%d,%s,%s,%s,%s,%s,,%.2f",
-                    salariedEmployee.getId(),
-                    salariedEmployee.getFirstName(),
-                    salariedEmployee.getLastName(),
-                    salariedEmployee.getEmail(),
-                    salariedEmployee.getPhoneNumber(),
-                    salariedEmployee.getPosition(),
-                    salariedEmployee.getBasicSalary()
-            );
+        String baseInfo = String.format(
+                "%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
+                employee.getId(),
+                employee.getFirstName(),
+                employee.getLastName(),
+                employee.getEmail(),
+                employee.getPhoneNumber(),
+                employee.getAddress(),
+                employee.getEmployeeType(),
+                employee.getPositionLevel(),
+                employee.getDesignation(),
+                employee.getSssNumber(),
+                employee.getPhoneNumber(),
+                employee.getTin(),
+                employee.getPagIbigNumber()
+        );
+
+        String specificInfo;
+        if (employee instanceof PartTimeEmployee) {
+            PartTimeEmployee partTimeEmployee = (PartTimeEmployee) employee;
+            specificInfo = String.format(",%.2f,", partTimeEmployee.getHourlyRate());
+        } else if (employee instanceof FullTimeEmployee) {
+            FullTimeEmployee fullTimeEmployee = (FullTimeEmployee) employee;
+            specificInfo = String.format(",,%.2f", fullTimeEmployee.getBasicSalary());
+        } else {
+            specificInfo = ",,0.00";
         }
-        return "";
+
+        return baseInfo + specificInfo;
     }
 
     private int getMaxId() {
@@ -199,6 +210,6 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private String getResourceFilePath(String fileName) {
         String projectRoot = System.getProperty("user.dir");
-        return projectRoot + File.separator + "src" + File.separator + "resources" + File.separator + fileName;
+        return projectRoot + File.separator + "src" + File.separator + "resource" + File.separator + fileName;
     }
 }
