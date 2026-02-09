@@ -76,7 +76,7 @@ public class CSVDeductionDAO implements DeductionDAO {
     private String getResourceFilePath(String fileName) {
         String projectRoot = System.getProperty("user.dir");
         // Fix: resources directory name
-        return projectRoot + File.separator + "src" + File.separator + "resources" + File.separator + fileName;
+        return projectRoot + File.separator + "src" + File.separator + "resource" + File.separator + fileName;
     }
 
     private boolean isNumeric(String s) {

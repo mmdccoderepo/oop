@@ -193,9 +193,11 @@ public class EmployeeManagementFrame extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = row;
         lblHourlyRate = new JLabel("Hourly Rate:");
+        lblHourlyRate.setVisible(false);
         panel.add(lblHourlyRate, gbc);
         gbc.gridx = 1;
         txtHourlyRate = new JTextField(20);
+        txtHourlyRate.setVisible(false);
         attachDocumentListener(txtHourlyRate);
         panel.add(txtHourlyRate, gbc);
 
@@ -204,11 +206,9 @@ public class EmployeeManagementFrame extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = row;
         lblSalary = new JLabel("Basic Salary:");
-        lblSalary.setVisible(false);
         panel.add(lblSalary, gbc);
         gbc.gridx = 1;
         txtSalary = new JTextField(20);
-        txtSalary.setVisible(false);
         attachDocumentListener(txtSalary);
         panel.add(txtSalary, gbc);
 
