@@ -101,7 +101,7 @@ public class EmployeeManagementFrame extends JFrame {
     private JPanel createFormPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
         panel.setBorder(BorderFactory.createTitledBorder("Employee Details"));
-        panel.setPreferredSize(new Dimension(450, 700));
+        panel.setPreferredSize(new Dimension(450, 500));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
