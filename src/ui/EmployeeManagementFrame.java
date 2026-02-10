@@ -1,6 +1,7 @@
 package ui;
 
 import dao.AllowanceDAO;
+import dao.AttendanceLogDAO;
 import dao.DeductionDAO;
 import dao.EmployeeDAO;
 import model.Employee;
@@ -28,6 +29,7 @@ public class EmployeeManagementFrame extends JFrame {
     private final EmployeeDAO employeeDAO;
     private final AllowanceDAO allowanceDAO;
     private final DeductionDAO deductionDAO;
+    private final AttendanceLogDAO attendanceLogDAO;
 
     // Form components
     private JTextField txtId;
@@ -65,10 +67,11 @@ public class EmployeeManagementFrame extends JFrame {
     private JButton btnClear;
     private JButton btnRefresh;
 
-    public EmployeeManagementFrame(EmployeeDAO employeeDAO, AllowanceDAO allowanceDAO, DeductionDAO deductionDAO) {
+    public EmployeeManagementFrame(EmployeeDAO employeeDAO, AllowanceDAO allowanceDAO, DeductionDAO deductionDAO, AttendanceLogDAO attendanceLogDAO) {
         this.employeeDAO = employeeDAO;
         this.allowanceDAO = allowanceDAO;
         this.deductionDAO = deductionDAO;
+        this.attendanceLogDAO = attendanceLogDAO;
         initializeUI();
         loadTableData();
     }
@@ -621,9 +624,9 @@ public class EmployeeManagementFrame extends JFrame {
 
     private PayrollService getPayrollService(String employeeType) {
         if ("Part-Time".equals(employeeType)) {
-            return new PartTimePayrollService(allowanceDAO, deductionDAO);
+            return new PartTimePayrollService(allowanceDAO, deductionDAO, attendanceLogDAO);
         } else if ("Full-Time".equals(employeeType)) {
-            return new FullTimePayrollService(allowanceDAO, deductionDAO);
+            return new FullTimePayrollService(allowanceDAO, deductionDAO, attendanceLogDAO);
         }
         return null;
     }

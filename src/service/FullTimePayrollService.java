@@ -1,6 +1,7 @@
 package service;
 
 import dao.AllowanceDAO;
+import dao.AttendanceLogDAO;
 import dao.DeductionDAO;
 import model.Allowance;
 import model.Deduction;
@@ -13,13 +14,17 @@ import java.util.List;
 public class FullTimePayrollService extends PayrollService {
     protected AllowanceDAO allowanceDAO;
     protected DeductionDAO deductionDAO;
+    protected AttendanceLogDAO attendanceLogDAO;
 
-    public FullTimePayrollService(AllowanceDAO allowanceDAO, DeductionDAO deductionDAO) {
+    private static final double STANDARD_WORK_HOURS = 160.0; // Assuming 40 hours/week * 4 weeks
+
+    public FullTimePayrollService(AllowanceDAO allowanceDAO, DeductionDAO deductionDAO, AttendanceLogDAO attendanceLogDAO) {
         super(allowanceDAO, deductionDAO);
         this.allowanceDAO = allowanceDAO;
         this.deductionDAO = deductionDAO;
+        this.attendanceLogDAO = attendanceLogDAO;
     }
-    
+
     @Override
     public double computeAllowances(Employee employee) {
         if (allowanceDAO == null) {
@@ -81,7 +86,10 @@ public class FullTimePayrollService extends PayrollService {
 
     @Override
     public double computeGrossSalary(Employee employee) {
-        return ((FullTimeEmployee) employee).getBasicSalary();
+        double basicSalary = ((FullTimeEmployee) employee).getBasicSalary();
+        double hoursWorked = attendanceLogDAO.getTotalHoursWorked(employee.getId());
+        double hourlyRate = basicSalary / STANDARD_WORK_HOURS;
+        return hourlyRate * hoursWorked;
     }
 
     @Override
