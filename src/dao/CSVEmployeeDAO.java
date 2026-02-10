@@ -183,9 +183,9 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
 
         String specificInfo;
         if (employee instanceof PartTimeEmployee) {
-            specificInfo = String.format(",%.2f,", employee.getCompensation());
+            specificInfo = String.format(",%.2f,", ((PartTimeEmployee) employee).getHourlyRate());
         } else if (employee instanceof FullTimeEmployee) {
-            specificInfo = String.format(",,%.2f", employee.getCompensation());
+            specificInfo = String.format(",,%.2f", ((FullTimeEmployee) employee).getBasicSalary());
         } else {
             specificInfo = ",,0.00";
         }
