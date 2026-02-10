@@ -481,14 +481,14 @@ public class EmployeeManagementFrame extends JFrame {
                 txtPagIbigNumber.setText(employee.getPagIbigNumber());
 
                 if (employee instanceof PartTimeEmployee) {
-                    txtHourlyRate.setText(String.format("%.2f", employee.getCompensation()));
+                    txtHourlyRate.setText(String.format("%.2f", ((PartTimeEmployee) employee).getHourlyRate()));
                     txtSalary.setText("");
                     lblHourlyRate.setVisible(true);
                     txtHourlyRate.setVisible(true);
                     lblSalary.setVisible(false);
                     txtSalary.setVisible(false);
                 } else if (employee instanceof FullTimeEmployee) {
-                    txtSalary.setText(String.format("%.2f", employee.getCompensation()));
+                    txtSalary.setText(String.format("%.2f", ((FullTimeEmployee) employee).getBasicSalary()));
                     txtHourlyRate.setText("");
                     lblHourlyRate.setVisible(false);
                     txtHourlyRate.setVisible(false);
@@ -525,11 +525,11 @@ public class EmployeeManagementFrame extends JFrame {
             ));
 
             if (emp instanceof PartTimeEmployee) {
-                row.add(String.format("%.2f", emp.getCompensation()));
+                row.add(String.format("%.2f", ((PartTimeEmployee) emp).getHourlyRate()));
                 row.add("");
             } else if (emp instanceof FullTimeEmployee) {
                 row.add("");
-                row.add(String.format("%.2f", emp.getCompensation()));
+                row.add(String.format("%.2f", ((FullTimeEmployee) emp).getBasicSalary()));
             }
 
             tableModel.addRow(row.toArray());

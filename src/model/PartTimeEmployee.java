@@ -20,14 +20,4 @@ public class PartTimeEmployee extends Employee {
         }
         this.hourlyRate = hourlyRate;
     }
-
-    @Override
-    public double getCompensation() {
-        return hourlyRate;
-    }
-
-    @Override
-    public String getCompensationLabel() {
-        return "Hourly Rate";
-    }
 }

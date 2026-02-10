@@ -20,14 +20,4 @@ public class FullTimeEmployee extends Employee {
         }
         this.basicSalary = basicSalary;
     }
-
-    @Override
-    public double getCompensation() {
-        return basicSalary;
-    }
-
-    @Override
-    public String getCompensationLabel() {
-        return "Monthly Salary";
-    }
 }

@@ -138,8 +138,4 @@ abstract public class Employee {
     public void setPagIbigNumber(String pagIbigNumber) {
         this.pagIbigNumber = pagIbigNumber;
     }
-
-    public abstract double getCompensation();
-
-    public abstract String getCompensationLabel();
 }
