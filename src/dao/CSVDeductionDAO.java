@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CSVDeductionDAO implements DeductionDAO {
+public class CSVDeductionDAO extends CSVBaseDAO implements DeductionDAO {
     private final String filePath = getResourceFilePath("deductions.csv");
 
     public CSVDeductionDAO() {
@@ -73,19 +73,5 @@ public class CSVDeductionDAO implements DeductionDAO {
         }
     }
 
-    private String getResourceFilePath(String fileName) {
-        String projectRoot = System.getProperty("user.dir");
-        // Fix: resources directory name
-        return projectRoot + File.separator + "src" + File.separator + "resource" + File.separator + fileName;
-    }
 
-    private boolean isNumeric(String s) {
-        if (s == null) return false;
-        try {
-            Double.parseDouble(s);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
-    }
 }

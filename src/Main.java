@@ -1,3 +1,4 @@
+import dao.*;
 import ui.EmployeeManagementFrame;
 
 import javax.swing.*;
@@ -11,7 +12,11 @@ public class Main {
         }
 
         SwingUtilities.invokeLater(() -> {
-            EmployeeManagementFrame frame = new EmployeeManagementFrame();
+            EmployeeDAO employeeDAO = new CSVEmployeeDAO();
+            AllowanceDAO allowanceDAO = new CSVAllowanceDAO();
+            DeductionDAO deductionDAO = new CSVDeductionDAO();
+
+            EmployeeManagementFrame frame = new EmployeeManagementFrame(employeeDAO, allowanceDAO, deductionDAO);
             frame.setVisible(true);
         });
     }

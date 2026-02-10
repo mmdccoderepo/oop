@@ -1,10 +1,13 @@
 package ui;
 
-import dao.CSVEmployeeDAO;
+import dao.AllowanceDAO;
+import dao.DeductionDAO;
 import dao.EmployeeDAO;
 import model.Employee;
 import model.FullTimeEmployee;
 import model.PartTimeEmployee;
+import service.FullTimePayrollService;
+import service.PartTimePayrollService;
 import service.PayrollService;
 
 import javax.swing.*;
@@ -22,7 +25,9 @@ import java.util.List;
 
 public class EmployeeManagementFrame extends JFrame {
 
-    private final EmployeeDAO EmployeeDAO;
+    private final EmployeeDAO employeeDAO;
+    private final AllowanceDAO allowanceDAO;
+    private final DeductionDAO deductionDAO;
 
     // Form components
     private JTextField txtId;
@@ -60,8 +65,10 @@ public class EmployeeManagementFrame extends JFrame {
     private JButton btnClear;
     private JButton btnRefresh;
 
-    public EmployeeManagementFrame() {
-        EmployeeDAO = new CSVEmployeeDAO();
+    public EmployeeManagementFrame(EmployeeDAO employeeDAO, AllowanceDAO allowanceDAO, DeductionDAO deductionDAO) {
+        this.employeeDAO = employeeDAO;
+        this.allowanceDAO = allowanceDAO;
+        this.deductionDAO = deductionDAO;
         initializeUI();
         loadTableData();
     }
@@ -390,7 +397,7 @@ public class EmployeeManagementFrame extends JFrame {
             Employee employee = getEmployeeFromForm();
             employee.setId(0);
 
-            if (EmployeeDAO.create(employee)) {
+            if (employeeDAO.create(employee)) {
                 JOptionPane.showMessageDialog(this, "Employee created successfully!");
                 loadTableData();
                 clearForm();
@@ -412,7 +419,7 @@ public class EmployeeManagementFrame extends JFrame {
 
             Employee employee = getEmployeeFromForm();
 
-            if (EmployeeDAO.update(employee)) {
+            if (employeeDAO.update(employee)) {
                 JOptionPane.showMessageDialog(this, "Employee updated successfully!");
                 loadTableData();
                 clearForm();
@@ -439,7 +446,7 @@ public class EmployeeManagementFrame extends JFrame {
             if (confirm == JOptionPane.YES_OPTION) {
                 int id = Integer.parseInt(txtId.getText());
 
-                if (EmployeeDAO.delete(id)) {
+                if (employeeDAO.delete(id)) {
                     JOptionPane.showMessageDialog(this, "Employee deleted successfully!");
                     loadTableData();
                     clearForm();
@@ -456,7 +463,7 @@ public class EmployeeManagementFrame extends JFrame {
         int selectedRow = table.getSelectedRow();
         if (selectedRow >= 0) {
             int id = Integer.parseInt(tableModel.getValueAt(selectedRow, 0).toString());
-            Employee employee = EmployeeDAO.read(id);
+            Employee employee = employeeDAO.read(id);
 
             if (employee != null) {
                 txtId.setText(String.valueOf(employee.getId()));
@@ -473,18 +480,15 @@ public class EmployeeManagementFrame extends JFrame {
                 txtTin.setText(employee.getTin());
                 txtPagIbigNumber.setText(employee.getPagIbigNumber());
 
-                // Set salary fields based on employee type
                 if (employee instanceof PartTimeEmployee) {
-                    PartTimeEmployee regEmp = (PartTimeEmployee) employee;
-                    txtHourlyRate.setText(String.format("%.2f", regEmp.getHourlyRate()));
+                    txtHourlyRate.setText(String.format("%.2f", employee.getCompensation()));
                     txtSalary.setText("");
                     lblHourlyRate.setVisible(true);
                     txtHourlyRate.setVisible(true);
                     lblSalary.setVisible(false);
                     txtSalary.setVisible(false);
                 } else if (employee instanceof FullTimeEmployee) {
-                    FullTimeEmployee salEmp = (FullTimeEmployee) employee;
-                    txtSalary.setText(String.format("%.2f", salEmp.getBasicSalary()));
+                    txtSalary.setText(String.format("%.2f", employee.getCompensation()));
                     txtHourlyRate.setText("");
                     lblHourlyRate.setVisible(false);
                     txtHourlyRate.setVisible(false);
@@ -498,7 +502,7 @@ public class EmployeeManagementFrame extends JFrame {
     }
 
     private void loadTableData() {
-        List<Employee> employees = EmployeeDAO.getAll();
+        List<Employee> employees = employeeDAO.getAll();
         updateTable(employees);
     }
 
@@ -520,19 +524,35 @@ public class EmployeeManagementFrame extends JFrame {
                     emp.getPagIbigNumber()
             ));
 
-            switch (emp.getEmployeeType()) {
-                case "Part-Time":
-                    PartTimeEmployee regularEmp = (PartTimeEmployee) emp;
-                    row.add(String.format("%.2f", regularEmp.getHourlyRate()));
-                    row.add("");
-                    break;
-                case "Full-Time":
-                    FullTimeEmployee salariedEmp = (FullTimeEmployee) emp;
-                    row.add("");
-                    row.add(String.format("%.2f", salariedEmp.getBasicSalary()));
-                    break;
+            if (emp instanceof PartTimeEmployee) {
+                row.add(String.format("%.2f", emp.getCompensation()));
+                row.add("");
+            } else if (emp instanceof FullTimeEmployee) {
+                row.add("");
+                row.add(String.format("%.2f", emp.getCompensation()));
             }
+
             tableModel.addRow(row.toArray());
+        }
+    }
+
+    private Employee createEmployee(String employeeType, int id, String firstName, String lastName,
+                                    String email, String phone, String address, String positionLevel,
+                                    String designation, String sssNumber, String philHealthNumber,
+                                    String tin, String pagIbigNumber) {
+        switch (employeeType) {
+            case "Part-Time":
+                double hourlyRate = Double.parseDouble(txtHourlyRate.getText().isEmpty() ? "0" : txtHourlyRate.getText().trim());
+                return new PartTimeEmployee(id, firstName, lastName, email, phone, address, employeeType,
+                        positionLevel, designation, sssNumber, philHealthNumber, tin,
+                        pagIbigNumber, hourlyRate);
+            case "Full-Time":
+                double monthlySalary = Double.parseDouble(txtSalary.getText().isEmpty() ? "0" : txtSalary.getText().trim());
+                return new FullTimeEmployee(id, firstName, lastName, email, phone, address, employeeType,
+                        positionLevel, designation, sssNumber, philHealthNumber, tin,
+                        pagIbigNumber, monthlySalary);
+            default:
+                throw new IllegalArgumentException("Invalid employee type!");
         }
     }
 
@@ -551,25 +571,8 @@ public class EmployeeManagementFrame extends JFrame {
         String tin = txtTin.getText().trim();
         String pagIbigNumber = txtPagIbigNumber.getText().trim();
 
-//        if (firstName.isEmpty() || lastName.isEmpty()) {
-//            throw new IllegalArgumentException("First name and last name are required!");
-//        }
-
-        Employee employee;
-        switch (employeeType) {
-            case "Part-Time":
-                double hourlyRate = Double.parseDouble(txtHourlyRate.getText().isEmpty() ? "0" : txtHourlyRate.getText().trim());
-                employee = new PartTimeEmployee(id, firstName, lastName, email, phone, address, employeeType, positionLevel, designation, sssNumber, philHealthNumber, tin, pagIbigNumber, hourlyRate);
-                break;
-            case "Full-Time":
-                double monthlySalary = Double.parseDouble(txtSalary.getText().isEmpty() ? "0" : txtSalary.getText().trim());
-                employee = new FullTimeEmployee(id, firstName, lastName, email, phone, address, employeeType, positionLevel, designation, sssNumber, philHealthNumber, tin, pagIbigNumber, monthlySalary);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid employee type!");
-        }
-
-        return employee;
+        return createEmployee(employeeType, id, firstName, lastName, email, phone, address,
+                positionLevel, designation, sssNumber, philHealthNumber, tin, pagIbigNumber);
     }
 
     private void clearForm() {
@@ -588,12 +591,6 @@ public class EmployeeManagementFrame extends JFrame {
         txtPagIbigNumber.setText("");
         txtHourlyRate.setText("");
         txtSalary.setText("");
-
-        // Clear government IDs
-        txtSssNumber.setText("");
-        txtPhilHealthNumber.setText("");
-        txtTin.setText("");
-        txtPagIbigNumber.setText("");
 
         lblGrossSalary.setText("₱ 0.00");
         lblAllowances.setText("₱ 0.00");
@@ -622,23 +619,38 @@ public class EmployeeManagementFrame extends JFrame {
         });
     }
 
-    private void updateSalaryLabels() {
-        PayrollService payrollService;
-        if ("Part-Time".equals(cmbEmployeeType.getSelectedItem())) {
-            payrollService = new service.PartTimePayrollService(new dao.CSVAllowanceDAO(), new dao.CSVDeductionDAO());
-        } else {
-            payrollService = new service.FullTimePayrollService(new dao.CSVAllowanceDAO(), new dao.CSVDeductionDAO());
+    private PayrollService getPayrollService(String employeeType) {
+        if ("Part-Time".equals(employeeType)) {
+            return new PartTimePayrollService(allowanceDAO, deductionDAO);
+        } else if ("Full-Time".equals(employeeType)) {
+            return new FullTimePayrollService(allowanceDAO, deductionDAO);
         }
+        return null;
+    }
 
-        Employee employee = getEmployeeFromForm();
-        double gross = payrollService.computeGrossSalary(employee);
-        double totalAllowances = payrollService.computeAllowances(employee);
-        double totalDeductions = payrollService.computeDeductions(employee);
-        double net = gross + totalAllowances - totalDeductions;
+    private void updateSalaryLabels() {
+        String employeeType = (String) cmbEmployeeType.getSelectedItem();
+        PayrollService payrollService = getPayrollService(employeeType);
 
-        lblGrossSalary.setText(String.format("₱ %.2f", gross));
-        lblAllowances.setText(String.format("₱ %.2f", totalAllowances));
-        lblDeductions.setText(String.format("₱ %.2f", totalDeductions));
-        lblNetSalary.setText(String.format("₱ %.2f", net));
+        if (payrollService != null) {
+            try {
+                Employee employee = getEmployeeFromForm();
+                double gross = payrollService.computeGrossSalary(employee);
+                double totalAllowances = payrollService.computeAllowances(employee);
+                double totalDeductions = payrollService.computeDeductions(employee);
+                double net = payrollService.computeNetSalary(employee);
+
+                lblGrossSalary.setText(String.format("₱ %.2f", gross));
+                lblAllowances.setText(String.format("₱ %.2f", totalAllowances));
+                lblDeductions.setText(String.format("₱ %.2f", totalDeductions));
+                lblNetSalary.setText(String.format("₱ %.2f", net));
+            } catch (Exception e) {
+            }
+        } else {
+            lblGrossSalary.setText("₱ 0.00");
+            lblAllowances.setText("₱ 0.00");
+            lblDeductions.setText("₱ 0.00");
+            lblNetSalary.setText("₱ 0.00");
+        }
     }
 }

@@ -8,7 +8,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CSVEmployeeDAO implements EmployeeDAO {
+public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
     private final String filePath = getResourceFilePath("employees.csv");
 
     public CSVEmployeeDAO() {
@@ -183,11 +183,9 @@ public class CSVEmployeeDAO implements EmployeeDAO {
 
         String specificInfo;
         if (employee instanceof PartTimeEmployee) {
-            PartTimeEmployee partTimeEmployee = (PartTimeEmployee) employee;
-            specificInfo = String.format(",%.2f,", partTimeEmployee.getHourlyRate());
+            specificInfo = String.format(",%.2f,", employee.getCompensation());
         } else if (employee instanceof FullTimeEmployee) {
-            FullTimeEmployee fullTimeEmployee = (FullTimeEmployee) employee;
-            specificInfo = String.format(",,%.2f", fullTimeEmployee.getBasicSalary());
+            specificInfo = String.format(",,%.2f", employee.getCompensation());
         } else {
             specificInfo = ",,0.00";
         }
@@ -206,10 +204,5 @@ public class CSVEmployeeDAO implements EmployeeDAO {
         }
 
         return maxId;
-    }
-
-    private String getResourceFilePath(String fileName) {
-        String projectRoot = System.getProperty("user.dir");
-        return projectRoot + File.separator + "src" + File.separator + "resource" + File.separator + fileName;
     }
 }

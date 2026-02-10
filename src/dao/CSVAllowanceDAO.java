@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CSVAllowanceDAO implements AllowanceDAO {
+public class CSVAllowanceDAO extends CSVBaseDAO implements AllowanceDAO {
     private final String filePath = getResourceFilePath("allowances.csv");
 
     public CSVAllowanceDAO() {
@@ -61,21 +61,6 @@ public class CSVAllowanceDAO implements AllowanceDAO {
         } catch (NumberFormatException e) {
             e.printStackTrace();
             return null;
-        }
-    }
-
-    private String getResourceFilePath(String fileName) {
-        String projectRoot = System.getProperty("user.dir");
-        return projectRoot + File.separator + "src" + File.separator + "resource" + File.separator + fileName;
-    }
-
-    private boolean isNumeric(String s) {
-        if (s == null) return false;
-        try {
-            Double.parseDouble(s);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
         }
     }
 }

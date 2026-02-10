@@ -15,18 +15,22 @@ public class PartTimePayrollService extends PayrollService {
         this.deductionDAO = deductionDAO;
     }
 
+    @Override
     public double computeAllowances(Employee employee) {
         return 0.0;
     }
 
+    @Override
     public double computeDeductions(Employee employee) {
         return 0.0;
     }
 
+    @Override
     public double computeGrossSalary(Employee employee) {
         return ((PartTimeEmployee) employee).getHourlyRate() * 160;
     }
-
+    
+    @Override
     public double computeNetSalary(Employee employee) {
         return computeGrossSalary(employee);
     }

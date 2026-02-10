@@ -19,7 +19,8 @@ public class FullTimePayrollService extends PayrollService {
         this.allowanceDAO = allowanceDAO;
         this.deductionDAO = deductionDAO;
     }
-
+    
+    @Override
     public double computeAllowances(Employee employee) {
         if (allowanceDAO == null) {
             return 0.0;
@@ -35,6 +36,7 @@ public class FullTimePayrollService extends PayrollService {
         return totalAllowances;
     }
 
+    @Override
     public double computeDeductions(Employee employee) {
         if (deductionDAO == null) {
             return 0.0;
@@ -77,10 +79,12 @@ public class FullTimePayrollService extends PayrollService {
         return matchingBracket.getEmployeeShare();
     }
 
+    @Override
     public double computeGrossSalary(Employee employee) {
         return ((FullTimeEmployee) employee).getBasicSalary();
     }
 
+    @Override
     public double computeNetSalary(Employee employee) {
         double gross = computeGrossSalary(employee);
         double allowances = computeAllowances(employee);
