@@ -1,6 +1,9 @@
 package model;
 
-abstract public class Employee {
+import java.util.ArrayList;
+import java.util.List;
+
+abstract public class Employee implements Payable {
     private int id;
     private String firstName;
     private String lastName;
@@ -14,6 +17,10 @@ abstract public class Employee {
     private String philHealthNumber;
     private String tin;
     private String pagIbigNumber;
+
+    private int hoursWorked;
+    private final List<Allowance> allowances = new ArrayList<>();
+    private final List<Deduction> deductions = new ArrayList<>();
 
     public Employee(int id, String firstName, String lastName, String email, String phoneNumber, String address,
                     String employeeType, String positionLevel, String designation, String sssNumber,
@@ -137,5 +144,38 @@ abstract public class Employee {
 
     public void setPagIbigNumber(String pagIbigNumber) {
         this.pagIbigNumber = pagIbigNumber;
+    }
+
+    public int getHoursWorked() {
+        return hoursWorked;
+    }
+
+    public void setHoursWorked(int hoursWorked) {
+        if (hoursWorked < 0) {
+            throw new IllegalArgumentException("Hours worked cannot be negative.");
+        }
+        this.hoursWorked = hoursWorked;
+    }
+
+    public List<Allowance> getAllowances() {
+        return allowances;
+    }
+
+    public void setAllowances(List<Allowance> allowances) {
+        this.allowances.clear();
+        if (allowances != null) {
+            this.allowances.addAll(allowances);
+        }
+    }
+
+    public List<Deduction> getDeductions() {
+        return deductions;
+    }
+
+    public void setDeductions(List<Deduction> deductions) {
+        this.deductions.clear();
+        if (deductions != null) {
+            this.deductions.addAll(deductions);
+        }
     }
 }

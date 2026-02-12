@@ -49,11 +49,11 @@ public class AttendanceLog {
         this.timeOut = timeOut;
     }
 
-    public double getHoursWorked() {
+    public int getHoursWorked() {
         if (timeIn == null || timeOut == null) {
-            return 0.0;
+            return 0;
         }
         Duration duration = Duration.between(timeIn, timeOut);
-        return duration.toMinutes() / 60.0;
+        return (int) duration.toHours();
     }
 }

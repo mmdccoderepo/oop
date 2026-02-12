@@ -5,11 +5,8 @@ import dao.AttendanceLogDAO;
 import dao.DeductionDAO;
 import dao.EmployeeDAO;
 import model.Employee;
-import model.FullTimeEmployee;
-import model.PartTimeEmployee;
-import service.FullTimePayrollService;
-import service.PartTimePayrollService;
-import service.PayrollService;
+import model.ProbationaryEmployee;
+import model.RegularEmployee;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -483,15 +480,15 @@ public class EmployeeManagementFrame extends JFrame {
                 txtTin.setText(employee.getTin());
                 txtPagIbigNumber.setText(employee.getPagIbigNumber());
 
-                if (employee instanceof PartTimeEmployee) {
-                    txtHourlyRate.setText(String.format("%.2f", ((PartTimeEmployee) employee).getHourlyRate()));
+                if (employee instanceof ProbationaryEmployee) {
+                    txtHourlyRate.setText(String.format("%.2f", ((ProbationaryEmployee) employee).getHourlyRate()));
                     txtSalary.setText("");
                     lblHourlyRate.setVisible(true);
                     txtHourlyRate.setVisible(true);
                     lblSalary.setVisible(false);
                     txtSalary.setVisible(false);
-                } else if (employee instanceof FullTimeEmployee) {
-                    txtSalary.setText(String.format("%.2f", ((FullTimeEmployee) employee).getBasicSalary()));
+                } else if (employee instanceof RegularEmployee) {
+                    txtSalary.setText(String.format("%.2f", ((RegularEmployee) employee).getBasicSalary()));
                     txtHourlyRate.setText("");
                     lblHourlyRate.setVisible(false);
                     txtHourlyRate.setVisible(false);
@@ -527,12 +524,12 @@ public class EmployeeManagementFrame extends JFrame {
                     emp.getPagIbigNumber()
             ));
 
-            if (emp instanceof PartTimeEmployee) {
-                row.add(String.format("%.2f", ((PartTimeEmployee) emp).getHourlyRate()));
+            if (emp instanceof ProbationaryEmployee) {
+                row.add(String.format("%.2f", ((ProbationaryEmployee) emp).getHourlyRate()));
                 row.add("");
-            } else if (emp instanceof FullTimeEmployee) {
+            } else if (emp instanceof RegularEmployee) {
                 row.add("");
-                row.add(String.format("%.2f", ((FullTimeEmployee) emp).getBasicSalary()));
+                row.add(String.format("%.2f", ((RegularEmployee) emp).getBasicSalary()));
             }
 
             tableModel.addRow(row.toArray());
@@ -543,20 +540,31 @@ public class EmployeeManagementFrame extends JFrame {
                                     String email, String phone, String address, String positionLevel,
                                     String designation, String sssNumber, String philHealthNumber,
                                     String tin, String pagIbigNumber) {
+        Employee employee;
+
         switch (employeeType) {
             case "Part-Time":
                 double hourlyRate = Double.parseDouble(txtHourlyRate.getText().isEmpty() ? "0" : txtHourlyRate.getText().trim());
-                return new PartTimeEmployee(id, firstName, lastName, email, phone, address, employeeType,
+                employee = new ProbationaryEmployee(id, firstName, lastName, email, phone, address, employeeType,
                         positionLevel, designation, sssNumber, philHealthNumber, tin,
                         pagIbigNumber, hourlyRate);
+                break;
             case "Full-Time":
                 double monthlySalary = Double.parseDouble(txtSalary.getText().isEmpty() ? "0" : txtSalary.getText().trim());
-                return new FullTimeEmployee(id, firstName, lastName, email, phone, address, employeeType,
+                employee = new RegularEmployee(id, firstName, lastName, email, phone, address, employeeType,
                         positionLevel, designation, sssNumber, philHealthNumber, tin,
                         pagIbigNumber, monthlySalary);
+                break;
             default:
                 throw new IllegalArgumentException("Invalid employee type!");
         }
+
+        int totalHoursWorked = attendanceLogDAO.getTotalHoursWorked(id);
+        employee.setHoursWorked(totalHoursWorked);
+        employee.setAllowances(allowanceDAO.getAll());
+        employee.setDeductions(deductionDAO.getAll());
+
+        return employee;
     }
 
     private Employee getEmployeeFromForm() {
@@ -622,38 +630,21 @@ public class EmployeeManagementFrame extends JFrame {
         });
     }
 
-    private PayrollService getPayrollService(String employeeType) {
-        if ("Part-Time".equals(employeeType)) {
-            return new PartTimePayrollService(allowanceDAO, deductionDAO, attendanceLogDAO);
-        } else if ("Full-Time".equals(employeeType)) {
-            return new FullTimePayrollService(allowanceDAO, deductionDAO, attendanceLogDAO);
-        }
-        return null;
-    }
-
     private void updateSalaryLabels() {
-        String employeeType = (String) cmbEmployeeType.getSelectedItem();
-        PayrollService payrollService = getPayrollService(employeeType);
+        try {
+            Employee employee = getEmployeeFromForm();
 
-        if (payrollService != null) {
-            try {
-                Employee employee = getEmployeeFromForm();
-                double gross = payrollService.computeGrossSalary(employee);
-                double totalAllowances = payrollService.computeAllowances(employee);
-                double totalDeductions = payrollService.computeDeductions(employee);
-                double net = payrollService.computeNetSalary(employee);
+            double gross = employee.computeGrossSalary();
+            double totalAllowances = employee.computeAllowances();
+            double totalDeductions = employee.computeDeductions();
+            double net = employee.computeNetSalary();
 
-                lblGrossSalary.setText(String.format("₱ %.2f", gross));
-                lblAllowances.setText(String.format("₱ %.2f", totalAllowances));
-                lblDeductions.setText(String.format("₱ %.2f", totalDeductions));
-                lblNetSalary.setText(String.format("₱ %.2f", net));
-            } catch (Exception e) {
-            }
-        } else {
-            lblGrossSalary.setText("₱ 0.00");
-            lblAllowances.setText("₱ 0.00");
-            lblDeductions.setText("₱ 0.00");
-            lblNetSalary.setText("₱ 0.00");
+            lblGrossSalary.setText(String.format("₱ %.2f", gross));
+            lblAllowances.setText(String.format("₱ %.2f", totalAllowances));
+            lblDeductions.setText(String.format("₱ %.2f", totalDeductions));
+            lblNetSalary.setText(String.format("₱ %.2f", net));
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

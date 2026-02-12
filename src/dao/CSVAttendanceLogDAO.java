@@ -70,9 +70,9 @@ public class CSVAttendanceLogDAO extends CSVBaseDAO implements AttendanceLogDAO 
     }
 
     @Override
-    public double getTotalHoursWorked(int employeeId) {
+    public int getTotalHoursWorked(int employeeId) {
         List<AttendanceLog> employeeLogs = getByEmployeeId(employeeId);
-        double totalHours = 0.0;
+        int totalHours = 0;
 
         for (AttendanceLog log : employeeLogs) {
             totalHours += log.getHoursWorked();

@@ -9,5 +9,5 @@ public interface AttendanceLogDAO {
 
     List<AttendanceLog> getByEmployeeId(int employeeId);
 
-    double getTotalHoursWorked(int employeeId);
+    int getTotalHoursWorked(int employeeId);
 }
