@@ -3,14 +3,14 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class RegularEmployee extends Employee {
+public class Regular extends Employee {
     private double basicSalary;
 
     private static final double STANDARD_WORK_HOURS = 160.0; // Assuming 40 hours/week * 4 weeks
 
-    public RegularEmployee(int id, String firstName, String lastName, String email, String phoneNumber, String address,
-                           String employeeType, String positionLevel, String designation, String sssNumber,
-                           String philHealthNumber, String tin, String pagIbigNumber, double basicSalary) {
+    public Regular(int id, String firstName, String lastName, String email, String phoneNumber, String address,
+                   String employeeType, String positionLevel, String designation, String sssNumber,
+                   String philHealthNumber, String tin, String pagIbigNumber, double basicSalary) {
         super(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, designation, sssNumber,
                 philHealthNumber, tin, pagIbigNumber);
         setBasicSalary(basicSalary);

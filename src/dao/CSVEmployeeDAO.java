@@ -1,8 +1,8 @@
 package dao;
 
 import model.Employee;
-import model.ProbationaryEmployee;
-import model.RegularEmployee;
+import model.Probationary;
+import model.Regular;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -134,10 +134,10 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
             Employee employee = null;
             switch (employeeType) {
                 case "Part-Time":
-                    employee = new ProbationaryEmployee(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, designation, sssNumber, philHealthNumber, tin, pagIbigNumber, hourlyRate);
+                    employee = new Probationary(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, designation, sssNumber, philHealthNumber, tin, pagIbigNumber, hourlyRate);
                     break;
                 case "Full-Time":
-                    employee = new RegularEmployee(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, designation, sssNumber, philHealthNumber, tin, pagIbigNumber, basicSalary);
+                    employee = new Regular(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, designation, sssNumber, philHealthNumber, tin, pagIbigNumber, basicSalary);
                     break;
                 default:
                     return null;
@@ -182,10 +182,10 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
         );
 
         String specificInfo;
-        if (employee instanceof ProbationaryEmployee) {
-            specificInfo = String.format(",%.2f,", ((ProbationaryEmployee) employee).getHourlyRate());
-        } else if (employee instanceof RegularEmployee) {
-            specificInfo = String.format(",,%.2f", ((RegularEmployee) employee).getBasicSalary());
+        if (employee instanceof Probationary) {
+            specificInfo = String.format(",%.2f,", ((Probationary) employee).getHourlyRate());
+        } else if (employee instanceof Regular) {
+            specificInfo = String.format(",,%.2f", ((Regular) employee).getBasicSalary());
         } else {
             specificInfo = ",,0.00";
         }

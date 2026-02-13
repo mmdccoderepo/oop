@@ -5,8 +5,8 @@ import dao.AttendanceLogDAO;
 import dao.DeductionDAO;
 import dao.EmployeeDAO;
 import model.Employee;
-import model.ProbationaryEmployee;
-import model.RegularEmployee;
+import model.Probationary;
+import model.Regular;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -480,15 +480,15 @@ public class EmployeeManagementFrame extends JFrame {
                 txtTin.setText(employee.getTin());
                 txtPagIbigNumber.setText(employee.getPagIbigNumber());
 
-                if (employee instanceof ProbationaryEmployee) {
-                    txtHourlyRate.setText(String.format("%.2f", ((ProbationaryEmployee) employee).getHourlyRate()));
+                if (employee instanceof Probationary) {
+                    txtHourlyRate.setText(String.format("%.2f", ((Probationary) employee).getHourlyRate()));
                     txtSalary.setText("");
                     lblHourlyRate.setVisible(true);
                     txtHourlyRate.setVisible(true);
                     lblSalary.setVisible(false);
                     txtSalary.setVisible(false);
-                } else if (employee instanceof RegularEmployee) {
-                    txtSalary.setText(String.format("%.2f", ((RegularEmployee) employee).getBasicSalary()));
+                } else if (employee instanceof Regular) {
+                    txtSalary.setText(String.format("%.2f", ((Regular) employee).getBasicSalary()));
                     txtHourlyRate.setText("");
                     lblHourlyRate.setVisible(false);
                     txtHourlyRate.setVisible(false);
@@ -524,12 +524,12 @@ public class EmployeeManagementFrame extends JFrame {
                     emp.getPagIbigNumber()
             ));
 
-            if (emp instanceof ProbationaryEmployee) {
-                row.add(String.format("%.2f", ((ProbationaryEmployee) emp).getHourlyRate()));
+            if (emp instanceof Probationary) {
+                row.add(String.format("%.2f", ((Probationary) emp).getHourlyRate()));
                 row.add("");
-            } else if (emp instanceof RegularEmployee) {
+            } else if (emp instanceof Regular) {
                 row.add("");
-                row.add(String.format("%.2f", ((RegularEmployee) emp).getBasicSalary()));
+                row.add(String.format("%.2f", ((Regular) emp).getBasicSalary()));
             }
 
             tableModel.addRow(row.toArray());
@@ -545,13 +545,13 @@ public class EmployeeManagementFrame extends JFrame {
         switch (employeeType) {
             case "Part-Time":
                 double hourlyRate = Double.parseDouble(txtHourlyRate.getText().isEmpty() ? "0" : txtHourlyRate.getText().trim());
-                employee = new ProbationaryEmployee(id, firstName, lastName, email, phone, address, employeeType,
+                employee = new Probationary(id, firstName, lastName, email, phone, address, employeeType,
                         positionLevel, designation, sssNumber, philHealthNumber, tin,
                         pagIbigNumber, hourlyRate);
                 break;
             case "Full-Time":
                 double monthlySalary = Double.parseDouble(txtSalary.getText().isEmpty() ? "0" : txtSalary.getText().trim());
-                employee = new RegularEmployee(id, firstName, lastName, email, phone, address, employeeType,
+                employee = new Regular(id, firstName, lastName, email, phone, address, employeeType,
                         positionLevel, designation, sssNumber, philHealthNumber, tin,
                         pagIbigNumber, monthlySalary);
                 break;
