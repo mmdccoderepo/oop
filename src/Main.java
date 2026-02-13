@@ -15,9 +15,10 @@ public class Main {
             EmployeeDAO employeeDAO = new CSVEmployeeDAO();
             AllowanceDAO allowanceDAO = new CSVAllowanceDAO();
             DeductionDAO deductionDAO = new CSVDeductionDAO();
+            TaxDAO taxDAO = new CSVTaxDAO();
             AttendanceLogDAO attendanceLogDAO = new CSVAttendanceLogDAO();
 
-            EmployeeManagementFrame frame = new EmployeeManagementFrame(employeeDAO, allowanceDAO, deductionDAO, attendanceLogDAO);
+            EmployeeManagementFrame frame = new EmployeeManagementFrame(employeeDAO, allowanceDAO, deductionDAO, taxDAO, attendanceLogDAO);
             frame.setVisible(true);
         });
     }

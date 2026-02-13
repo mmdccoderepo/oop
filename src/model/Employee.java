@@ -12,7 +12,7 @@ abstract public class Employee implements Payable {
     private String address;
     private String employeeType;
     private String positionLevel;
-    private String designation;
+    private String department;
     private String sssNumber;
     private String philHealthNumber;
     private String tin;
@@ -21,9 +21,10 @@ abstract public class Employee implements Payable {
     private int hoursWorked;
     private final List<Allowance> allowances = new ArrayList<>();
     private final List<Deduction> deductions = new ArrayList<>();
+    private final List<TaxBracket> taxBrackets = new ArrayList<>();
 
     public Employee(int id, String firstName, String lastName, String email, String phoneNumber, String address,
-                    String employeeType, String positionLevel, String designation, String sssNumber,
+                    String employeeType, String positionLevel, String department, String sssNumber,
                     String philHealthNumber, String tin, String pagIbigNumber) {
         this.id = id;
         this.firstName = firstName;
@@ -33,7 +34,7 @@ abstract public class Employee implements Payable {
         this.address = address;
         this.employeeType = employeeType;
         this.positionLevel = positionLevel;
-        this.designation = designation;
+        this.department = department;
         this.sssNumber = sssNumber;
         this.philHealthNumber = philHealthNumber;
         this.tin = tin;
@@ -73,8 +74,8 @@ abstract public class Employee implements Payable {
         return positionLevel;
     }
 
-    public String getDesignation() {
-        return designation;
+    public String getDepartment() {
+        return department;
     }
 
     public String getSssNumber() {
@@ -126,8 +127,8 @@ abstract public class Employee implements Payable {
         this.positionLevel = positionLevel;
     }
 
-    public void setDesignation(String designation) {
-        this.designation = designation;
+    public void setDepartment(String department) {
+        this.department = department;
     }
 
     public void setSssNumber(String sssNumber) {
@@ -177,5 +178,81 @@ abstract public class Employee implements Payable {
         if (deductions != null) {
             this.deductions.addAll(deductions);
         }
+    }
+
+    public List<TaxBracket> getTaxBrackets() {
+        return taxBrackets;
+    }
+
+    public void setTaxBrackets(List<TaxBracket> taxBrackets) {
+        this.taxBrackets.clear();
+        if (taxBrackets != null) {
+            this.taxBrackets.addAll(taxBrackets);
+        }
+    }
+
+    public double computeDeductions() {
+        double gross = computeGrossSalary();
+        double totalDeductions = 0.0;
+        totalDeductions += getDeduction("SSS", gross);
+        totalDeductions += getDeduction("PhilHealth", gross);
+        totalDeductions += getDeduction("Pag-IBIG", gross);
+        totalDeductions += computeTax();
+        return totalDeductions;
+    }
+
+    private double getDeduction(String deductionType, double gross) {
+        List<Deduction> deductions = new ArrayList<>();
+        for (Deduction deduction : getDeductions()) {
+            if (deductionType.equals(deduction.getName())) {
+                deductions.add(deduction);
+            }
+        }
+        if (deductions.isEmpty()) {
+            return 0.0;
+        }
+
+        Deduction matchingBracket = null;
+        for (Deduction deduction : deductions) {
+            if (gross >= deduction.getSalaryMin() && gross <= deduction.getSalaryMax()) {
+                if (matchingBracket == null || deduction.getSalaryMin() > matchingBracket.getSalaryMin()) {
+                    matchingBracket = deduction;
+                }
+            }
+        }
+
+        if (matchingBracket == null) {
+            return 0.0;
+        }
+
+        return matchingBracket.getEmployeeShare();
+    }
+
+    public double computeTax() {
+        double taxableIncome = computeGrossSalary() + computeAllowances();
+
+        if (taxBrackets.isEmpty()) {
+            return 0.0;
+        }
+
+        TaxBracket matchingBracket = null;
+        for (TaxBracket taxBracket : taxBrackets) {
+            if (taxableIncome >= taxBracket.getSalaryMin() && taxableIncome <= taxBracket.getSalaryMax()) {
+                matchingBracket = taxBracket;
+            }
+        }
+
+        if (matchingBracket == null) {
+            return 0.0;
+        }
+
+        double excess = taxableIncome - matchingBracket.getSalaryMin();
+        return matchingBracket.getBaseAmount() + (excess * matchingBracket.getRate());
+    }
+
+    public double computeNetSalary() {
+        double gross = computeGrossSalary();
+        double deductions = computeDeductions();
+        return gross - deductions;
     }
 }

@@ -121,7 +121,7 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
             String address = parts[5];
             String employeeType = parts[6];
             String positionLevel = parts[7];
-            String designation = parts[8];
+            String department = parts[8];
             String sssNumber = parts[9];
             String philHealthNumber = parts[10];
             String tin = parts[11];
@@ -133,11 +133,11 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
 
             Employee employee = null;
             switch (employeeType) {
-                case "Part-Time":
-                    employee = new Probationary(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, designation, sssNumber, philHealthNumber, tin, pagIbigNumber, hourlyRate);
+                case "Probationary":
+                    employee = new Probationary(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, department, sssNumber, philHealthNumber, tin, pagIbigNumber, hourlyRate);
                     break;
-                case "Full-Time":
-                    employee = new Regular(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, designation, sssNumber, philHealthNumber, tin, pagIbigNumber, basicSalary);
+                case "Regular":
+                    employee = new Regular(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, department, sssNumber, philHealthNumber, tin, pagIbigNumber, basicSalary);
                     break;
                 default:
                     return null;
@@ -174,9 +174,9 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
                 employee.getAddress(),
                 employee.getEmployeeType(),
                 employee.getPositionLevel(),
-                employee.getDesignation(),
+                employee.getDepartment(),
                 employee.getSssNumber(),
-                employee.getPhoneNumber(),
+                employee.getPhilHealthNumber(),
                 employee.getTin(),
                 employee.getPagIbigNumber()
         );

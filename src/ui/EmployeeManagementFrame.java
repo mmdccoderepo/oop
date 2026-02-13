@@ -1,9 +1,6 @@
 package ui;
 
-import dao.AllowanceDAO;
-import dao.AttendanceLogDAO;
-import dao.DeductionDAO;
-import dao.EmployeeDAO;
+import dao.*;
 import model.Employee;
 import model.Probationary;
 import model.Regular;
@@ -26,6 +23,7 @@ public class EmployeeManagementFrame extends JFrame {
     private final EmployeeDAO employeeDAO;
     private final AllowanceDAO allowanceDAO;
     private final DeductionDAO deductionDAO;
+    private final TaxDAO taxDAO;
     private final AttendanceLogDAO attendanceLogDAO;
 
     // Form components
@@ -36,7 +34,7 @@ public class EmployeeManagementFrame extends JFrame {
     private JTextField txtPhone;
     private JComboBox<String> cmbEmployeeType;
     private JComboBox<String> cmbPositionLevel;
-    private JComboBox<String> cmbDesignation;
+    private JComboBox<String> cmbDepartment;
     private JTextField txtAddress;
     private JTextField txtSssNumber;
     private JTextField txtPhilHealthNumber;
@@ -64,10 +62,11 @@ public class EmployeeManagementFrame extends JFrame {
     private JButton btnClear;
     private JButton btnRefresh;
 
-    public EmployeeManagementFrame(EmployeeDAO employeeDAO, AllowanceDAO allowanceDAO, DeductionDAO deductionDAO, AttendanceLogDAO attendanceLogDAO) {
+    public EmployeeManagementFrame(EmployeeDAO employeeDAO, AllowanceDAO allowanceDAO, DeductionDAO deductionDAO, TaxDAO taxDAO, AttendanceLogDAO attendanceLogDAO) {
         this.employeeDAO = employeeDAO;
         this.allowanceDAO = allowanceDAO;
         this.deductionDAO = deductionDAO;
+        this.taxDAO = taxDAO;
         this.attendanceLogDAO = attendanceLogDAO;
         initializeUI();
         loadTableData();
@@ -170,7 +169,7 @@ public class EmployeeManagementFrame extends JFrame {
         gbc.gridy = row;
         panel.add(new JLabel("Position:"), gbc);
         gbc.gridx = 1;
-        String[] positions = {"Full-Time", "Part-Time"};
+        String[] positions = {"Regular", "Probationary"};
         cmbEmployeeType = new JComboBox<>(positions);
         panel.add(cmbEmployeeType, gbc);
 
@@ -178,13 +177,13 @@ public class EmployeeManagementFrame extends JFrame {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 String selectedEmployeeType = (String) cmbEmployeeType.getSelectedItem();
 
-                if ("Part-Time".equals(selectedEmployeeType)) {
+                if ("Probationary".equals(selectedEmployeeType)) {
                     lblHourlyRate.setVisible(true);
                     txtHourlyRate.setVisible(true);
                     lblSalary.setVisible(false);
                     txtSalary.setVisible(false);
                     txtSalary.setText("");
-                } else if ("Full-Time".equals(selectedEmployeeType)) {
+                } else if ("Regular".equals(selectedEmployeeType)) {
                     lblHourlyRate.setVisible(false);
                     txtHourlyRate.setVisible(false);
                     txtHourlyRate.setText("");
@@ -229,15 +228,15 @@ public class EmployeeManagementFrame extends JFrame {
         cmbPositionLevel = new JComboBox<>(positionLevels);
         panel.add(cmbPositionLevel, gbc);
 
-        // Designation
+        // Department
         row++;
         gbc.gridx = 0;
         gbc.gridy = row;
-        panel.add(new JLabel("Designation:"), gbc);
+        panel.add(new JLabel("Department:"), gbc);
         gbc.gridx = 1;
-        String[] designations = {"Employee", "Payroll Admin", "HR Admin"};
-        cmbDesignation = new JComboBox<>(designations);
-        panel.add(cmbDesignation, gbc);
+        String[] departments = {"HR", "Finance", "IT"};
+        cmbDepartment = new JComboBox<>(departments);
+        panel.add(cmbDepartment, gbc);
 
         // SSS Number
         row++;
@@ -340,7 +339,7 @@ public class EmployeeManagementFrame extends JFrame {
         panel.add(topPanel, BorderLayout.NORTH);
 
         // Table
-        String[] columns = {"ID", "First Name", "Last Name", "Email", "Phone", "Address", "Position Level", "Designation", "SSS Number", "PhilHealth Number", "TIN", "Pag-IBIG Number", "Hourly Rate", "Monthly Salary"};
+        String[] columns = {"ID", "First Name", "Last Name", "Email", "Phone", "Address", "Position Level", "Department", "SSS Number", "PhilHealth Number", "TIN", "Pag-IBIG Number", "Hourly Rate", "Monthly Salary"};
         tableModel = new DefaultTableModel(columns, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -474,7 +473,7 @@ public class EmployeeManagementFrame extends JFrame {
                 txtAddress.setText(employee.getAddress());
                 cmbEmployeeType.setSelectedItem(employee.getEmployeeType());
                 cmbPositionLevel.setSelectedItem(employee.getPositionLevel());
-                cmbDesignation.setSelectedItem(employee.getDesignation());
+                cmbDepartment.setSelectedItem(employee.getDepartment());
                 txtSssNumber.setText(employee.getSssNumber());
                 txtPhilHealthNumber.setText(employee.getPhilHealthNumber());
                 txtTin.setText(employee.getTin());
@@ -517,7 +516,7 @@ public class EmployeeManagementFrame extends JFrame {
                     emp.getPhoneNumber(),
                     emp.getEmployeeType(),
                     emp.getPositionLevel(),
-                    emp.getDesignation(),
+                    emp.getDepartment(),
                     emp.getSssNumber(),
                     emp.getPhilHealthNumber(),
                     emp.getTin(),
@@ -538,21 +537,21 @@ public class EmployeeManagementFrame extends JFrame {
 
     private Employee createEmployee(String employeeType, int id, String firstName, String lastName,
                                     String email, String phone, String address, String positionLevel,
-                                    String designation, String sssNumber, String philHealthNumber,
+                                    String department, String sssNumber, String philHealthNumber,
                                     String tin, String pagIbigNumber) {
         Employee employee;
 
         switch (employeeType) {
-            case "Part-Time":
+            case "Probationary":
                 double hourlyRate = Double.parseDouble(txtHourlyRate.getText().isEmpty() ? "0" : txtHourlyRate.getText().trim());
                 employee = new Probationary(id, firstName, lastName, email, phone, address, employeeType,
-                        positionLevel, designation, sssNumber, philHealthNumber, tin,
+                        positionLevel, department, sssNumber, philHealthNumber, tin,
                         pagIbigNumber, hourlyRate);
                 break;
-            case "Full-Time":
+            case "Regular":
                 double monthlySalary = Double.parseDouble(txtSalary.getText().isEmpty() ? "0" : txtSalary.getText().trim());
                 employee = new Regular(id, firstName, lastName, email, phone, address, employeeType,
-                        positionLevel, designation, sssNumber, philHealthNumber, tin,
+                        positionLevel, department, sssNumber, philHealthNumber, tin,
                         pagIbigNumber, monthlySalary);
                 break;
             default:
@@ -563,6 +562,7 @@ public class EmployeeManagementFrame extends JFrame {
         employee.setHoursWorked(totalHoursWorked);
         employee.setAllowances(allowanceDAO.getAll());
         employee.setDeductions(deductionDAO.getAll());
+        employee.setTaxBrackets(taxDAO.getAll());
 
         return employee;
     }
@@ -576,14 +576,14 @@ public class EmployeeManagementFrame extends JFrame {
         String address = txtAddress.getText().trim();
         String employeeType = (cmbEmployeeType.getSelectedItem() == null) ? "" : cmbEmployeeType.getSelectedItem().toString().trim();
         String positionLevel = (cmbPositionLevel.getSelectedItem() == null) ? "" : cmbPositionLevel.getSelectedItem().toString().trim();
-        String designation = (cmbDesignation.getSelectedItem() == null) ? "" : cmbDesignation.getSelectedItem().toString().trim();
+        String department = (cmbDepartment.getSelectedItem() == null) ? "" : cmbDepartment.getSelectedItem().toString().trim();
         String sssNumber = txtSssNumber.getText().trim();
         String philHealthNumber = txtPhilHealthNumber.getText().trim();
         String tin = txtTin.getText().trim();
         String pagIbigNumber = txtPagIbigNumber.getText().trim();
 
         return createEmployee(employeeType, id, firstName, lastName, email, phone, address,
-                positionLevel, designation, sssNumber, philHealthNumber, tin, pagIbigNumber);
+                positionLevel, department, sssNumber, philHealthNumber, tin, pagIbigNumber);
     }
 
     private void clearForm() {
@@ -595,7 +595,7 @@ public class EmployeeManagementFrame extends JFrame {
         txtAddress.setText("");
         cmbEmployeeType.setSelectedIndex(0);
         cmbPositionLevel.setSelectedIndex(0);
-        cmbDesignation.setSelectedIndex(0);
+        cmbDepartment.setSelectedIndex(0);
         txtSssNumber.setText("");
         txtPhilHealthNumber.setText("");
         txtTin.setText("");
