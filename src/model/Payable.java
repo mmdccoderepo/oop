@@ -19,6 +19,8 @@ public interface Payable {
 
     double computeDeductions();
 
+    double computeTax();
+
     double computeGrossSalary();
 
     double computeNetSalary();
