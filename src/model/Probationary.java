@@ -22,6 +22,10 @@ public class Probationary extends Employee {
         this.hourlyRate = hourlyRate;
     }
 
+    public double getCompensation() {
+        return getHourlyRate();
+    }
+
     public double computeAllowances() {
         return 0.0;
     }

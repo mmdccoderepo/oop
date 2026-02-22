@@ -176,17 +176,17 @@ public class EmployeeManagementFrame extends JFrame {
         cmbEmployeeType.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 String selectedEmployeeType = (String) cmbEmployeeType.getSelectedItem();
+                lblSalary.setVisible(false);
+                txtSalary.setVisible(false);
+                txtSalary.setText("");
+                lblHourlyRate.setVisible(false);
+                txtHourlyRate.setVisible(false);
+                txtHourlyRate.setText("");
 
                 if ("Probationary".equals(selectedEmployeeType)) {
                     lblHourlyRate.setVisible(true);
                     txtHourlyRate.setVisible(true);
-                    lblSalary.setVisible(false);
-                    txtSalary.setVisible(false);
-                    txtSalary.setText("");
                 } else if ("Regular".equals(selectedEmployeeType)) {
-                    lblHourlyRate.setVisible(false);
-                    txtHourlyRate.setVisible(false);
-                    txtHourlyRate.setText("");
                     lblSalary.setVisible(true);
                     txtSalary.setVisible(true);
                 }
@@ -479,18 +479,19 @@ public class EmployeeManagementFrame extends JFrame {
                 txtTin.setText(employee.getTin());
                 txtPagIbigNumber.setText(employee.getPagIbigNumber());
 
+                txtHourlyRate.setText("");
+                txtSalary.setText("");
+                lblHourlyRate.setVisible(false);
+                txtHourlyRate.setVisible(false);
+                lblSalary.setVisible(false);
+                txtSalary.setVisible(false);
+
                 if (employee instanceof Probationary) {
-                    txtHourlyRate.setText(String.format("%.2f", ((Probationary) employee).getHourlyRate()));
-                    txtSalary.setText("");
+                    txtHourlyRate.setText(String.format("%.2f", employee.getCompensation()));
                     lblHourlyRate.setVisible(true);
                     txtHourlyRate.setVisible(true);
-                    lblSalary.setVisible(false);
-                    txtSalary.setVisible(false);
                 } else if (employee instanceof Regular) {
-                    txtSalary.setText(String.format("%.2f", ((Regular) employee).getBasicSalary()));
-                    txtHourlyRate.setText("");
-                    lblHourlyRate.setVisible(false);
-                    txtHourlyRate.setVisible(false);
+                    txtSalary.setText(String.format("%.2f", employee.getCompensation()));
                     lblSalary.setVisible(true);
                     txtSalary.setVisible(true);
                 }
@@ -523,13 +524,7 @@ public class EmployeeManagementFrame extends JFrame {
                     emp.getPagIbigNumber()
             ));
 
-            if (emp instanceof Probationary) {
-                row.add(String.format("%.2f", ((Probationary) emp).getHourlyRate()));
-                row.add("");
-            } else if (emp instanceof Regular) {
-                row.add("");
-                row.add(String.format("%.2f", ((Regular) emp).getBasicSalary()));
-            }
+            row.add(String.format("%.2f", emp.getCompensation()));
 
             tableModel.addRow(row.toArray());
         }

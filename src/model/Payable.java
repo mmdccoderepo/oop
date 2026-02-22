@@ -7,6 +7,8 @@ public interface Payable {
 
     void setHoursWorked(int hoursWorked);
 
+    double getCompensation();
+
     List<Allowance> getAllowances();
 
     void setAllowances(List<Allowance> allowances);

@@ -9,7 +9,7 @@ public class Finance extends Regular {
     }
 
     public double computeAuditBonus() {
-        return 0.1 * getBasicSalary(); // Example: 10% of basic salary as financial bonus
+        return 0.1 * getCompensation(); // Example: 10% of basic salary as financial bonus
     }
 
     @Override

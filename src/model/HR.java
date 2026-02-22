@@ -9,7 +9,7 @@ public class HR extends Regular {
     }
 
     public double computeRecruitmentBonus() {
-        return 0.05 * getBasicSalary(); // Example: 5% of basic salary as recruitment bonus
+        return 0.05 * getCompensation(); // Example: 5% of basic salary as recruitment bonus
     }
 
     @Override

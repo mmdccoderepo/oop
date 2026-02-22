@@ -127,17 +127,15 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
             String tin = parts[11];
             String pagIbigNumber = parts[12];
 
-            double hourlyRate = parts.length > 13 && !parts[13].isEmpty() ? Double.parseDouble(parts[13]) : 0.0;
-            double basicSalary = parts.length > 14 && !parts[14].isEmpty() ? Double.parseDouble(parts[14]) : 0.0;
-
+            double compensation = parts.length > 13 && !parts[13].isEmpty() ? Double.parseDouble(parts[13]) : 0.0;
 
             Employee employee = null;
             switch (employeeType) {
                 case "Probationary":
-                    employee = new Probationary(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, department, sssNumber, philHealthNumber, tin, pagIbigNumber, hourlyRate);
+                    employee = new Probationary(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, department, sssNumber, philHealthNumber, tin, pagIbigNumber, compensation);
                     break;
                 case "Regular":
-                    employee = new Regular(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, department, sssNumber, philHealthNumber, tin, pagIbigNumber, basicSalary);
+                    employee = new Regular(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, department, sssNumber, philHealthNumber, tin, pagIbigNumber, compensation);
                     break;
                 default:
                     return null;
@@ -181,14 +179,7 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
                 employee.getPagIbigNumber()
         );
 
-        String specificInfo;
-        if (employee instanceof Probationary) {
-            specificInfo = String.format(",%.2f,", ((Probationary) employee).getHourlyRate());
-        } else if (employee instanceof Regular) {
-            specificInfo = String.format(",,%.2f", ((Regular) employee).getBasicSalary());
-        } else {
-            specificInfo = ",,0.00";
-        }
+        String specificInfo = String.format(",%.2f", employee.getCompensation());
 
         return baseInfo + specificInfo;
     }

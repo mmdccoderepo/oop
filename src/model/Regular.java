@@ -24,6 +24,10 @@ public class Regular extends Employee {
         this.basicSalary = basicSalary;
     }
 
+    public double getCompensation() {
+        return getBasicSalary();
+    }
+
     public double computeAllowances() {
         double totalAllowances = 0.0;
         for (Allowance allowance : getAllowances()) {
