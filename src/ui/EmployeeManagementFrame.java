@@ -3,7 +3,7 @@ package ui;
 import dao.*;
 import model.Employee;
 import model.Probationary;
-import model.Regular;
+import service.EmployeeService;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -175,22 +175,7 @@ public class EmployeeManagementFrame extends JFrame {
 
         cmbEmployeeType.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                String selectedEmployeeType = (String) cmbEmployeeType.getSelectedItem();
-                lblSalary.setVisible(false);
-                txtSalary.setVisible(false);
-                txtSalary.setText("");
-                lblHourlyRate.setVisible(false);
-                txtHourlyRate.setVisible(false);
-                txtHourlyRate.setText("");
-
-                if ("Probationary".equals(selectedEmployeeType)) {
-                    lblHourlyRate.setVisible(true);
-                    txtHourlyRate.setVisible(true);
-                } else if ("Regular".equals(selectedEmployeeType)) {
-                    lblSalary.setVisible(true);
-                    txtSalary.setVisible(true);
-                }
-                updateSalaryLabels();
+                updateUIForEmployeeType();
             }
         });
 
@@ -460,45 +445,16 @@ public class EmployeeManagementFrame extends JFrame {
 
     private void selectEmployee() {
         int selectedRow = table.getSelectedRow();
-        if (selectedRow >= 0) {
-            int id = Integer.parseInt(tableModel.getValueAt(selectedRow, 0).toString());
-            Employee employee = employeeDAO.read(id);
+        if (selectedRow < 0) return;
 
-            if (employee != null) {
-                txtId.setText(String.valueOf(employee.getId()));
-                txtFirstName.setText(employee.getFirstName());
-                txtLastName.setText(employee.getLastName());
-                txtEmail.setText(employee.getEmail());
-                txtPhone.setText(employee.getPhoneNumber());
-                txtAddress.setText(employee.getAddress());
-                cmbEmployeeType.setSelectedItem(employee.getEmployeeType());
-                cmbPositionLevel.setSelectedItem(employee.getPositionLevel());
-                cmbDepartment.setSelectedItem(employee.getDepartment());
-                txtSssNumber.setText(employee.getSssNumber());
-                txtPhilHealthNumber.setText(employee.getPhilHealthNumber());
-                txtTin.setText(employee.getTin());
-                txtPagIbigNumber.setText(employee.getPagIbigNumber());
+        int id = Integer.parseInt(tableModel.getValueAt(selectedRow, 0).toString());
+        Employee employee = employeeDAO.read(id);
 
-                txtHourlyRate.setText("");
-                txtSalary.setText("");
-                lblHourlyRate.setVisible(false);
-                txtHourlyRate.setVisible(false);
-                lblSalary.setVisible(false);
-                txtSalary.setVisible(false);
+        if (employee == null) return;
 
-                if (employee instanceof Probationary) {
-                    txtHourlyRate.setText(String.format("%.2f", employee.getCompensation()));
-                    lblHourlyRate.setVisible(true);
-                    txtHourlyRate.setVisible(true);
-                } else if (employee instanceof Regular) {
-                    txtSalary.setText(String.format("%.2f", employee.getCompensation()));
-                    lblSalary.setVisible(true);
-                    txtSalary.setVisible(true);
-                }
-
-                updateSalaryLabels();
-            }
-        }
+        populateFormWithEmployee(employee);
+        updateUIForEmployeeType();
+        updateSalaryLabels();
     }
 
     private void loadTableData() {
@@ -534,24 +490,11 @@ public class EmployeeManagementFrame extends JFrame {
                                     String email, String phone, String address, String positionLevel,
                                     String department, String sssNumber, String philHealthNumber,
                                     String tin, String pagIbigNumber) {
-        Employee employee;
+        double compensation = getCompensationFromForm();
 
-        switch (employeeType) {
-            case "Probationary":
-                double hourlyRate = Double.parseDouble(txtHourlyRate.getText().isEmpty() ? "0" : txtHourlyRate.getText().trim());
-                employee = new Probationary(id, firstName, lastName, email, phone, address, employeeType,
-                        positionLevel, department, sssNumber, philHealthNumber, tin,
-                        pagIbigNumber, hourlyRate);
-                break;
-            case "Regular":
-                double monthlySalary = Double.parseDouble(txtSalary.getText().isEmpty() ? "0" : txtSalary.getText().trim());
-                employee = new Regular(id, firstName, lastName, email, phone, address, employeeType,
-                        positionLevel, department, sssNumber, philHealthNumber, tin,
-                        pagIbigNumber, monthlySalary);
-                break;
-            default:
-                throw new IllegalArgumentException("Invalid employee type!");
-        }
+        Employee employee = EmployeeService.createEmployee(employeeType, id, firstName, lastName,
+                email, phone, address, positionLevel, department, sssNumber, philHealthNumber,
+                tin, pagIbigNumber, compensation);
 
         int totalHoursWorked = attendanceLogDAO.getTotalHoursWorked(id);
         employee.setHoursWorked(totalHoursWorked);
@@ -640,6 +583,55 @@ public class EmployeeManagementFrame extends JFrame {
             lblNetSalary.setText(String.format("₱ %.2f", net));
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    private void updateUIForEmployeeType() {
+        String selectedType = (String) cmbEmployeeType.getSelectedItem();
+        boolean isProbationary = "Probationary".equals(selectedType);
+
+        lblHourlyRate.setVisible(isProbationary);
+        txtHourlyRate.setVisible(isProbationary);
+        lblSalary.setVisible(!isProbationary);
+        txtSalary.setVisible(!isProbationary);
+
+        if (!isProbationary) {
+            txtHourlyRate.setText("");
+        } else {
+            txtSalary.setText("");
+        }
+
+        updateSalaryLabels();
+    }
+
+    private void populateFormWithEmployee(Employee employee) {
+        txtId.setText(String.valueOf(employee.getId()));
+        txtFirstName.setText(employee.getFirstName());
+        txtLastName.setText(employee.getLastName());
+        txtEmail.setText(employee.getEmail());
+        txtPhone.setText(employee.getPhoneNumber());
+        txtAddress.setText(employee.getAddress());
+        cmbEmployeeType.setSelectedItem(employee.getEmployeeType());
+        cmbPositionLevel.setSelectedItem(employee.getPositionLevel());
+        cmbDepartment.setSelectedItem(employee.getDepartment());
+        txtSssNumber.setText(employee.getSssNumber());
+        txtPhilHealthNumber.setText(employee.getPhilHealthNumber());
+        txtTin.setText(employee.getTin());
+        txtPagIbigNumber.setText(employee.getPagIbigNumber());
+
+        if (employee instanceof Probationary) {
+            txtHourlyRate.setText(String.format("%.2f", employee.getCompensation()));
+        } else {
+            txtSalary.setText(String.format("%.2f", employee.getCompensation()));
+        }
+    }
+
+    private double getCompensationFromForm() {
+        String selectedType = (String) cmbEmployeeType.getSelectedItem();
+        if ("Probationary".equals(selectedType)) {
+            return Double.parseDouble(txtHourlyRate.getText().isEmpty() ? "0" : txtHourlyRate.getText().trim());
+        } else {
+            return Double.parseDouble(txtSalary.getText().isEmpty() ? "0" : txtSalary.getText().trim());
         }
     }
 }
