@@ -2,7 +2,6 @@ package ui;
 
 import dao.*;
 import model.Employee;
-import model.Probationary;
 import service.EmployeeService;
 
 import javax.swing.*;
@@ -40,11 +39,8 @@ public class EmployeeManagementFrame extends JFrame {
     private JTextField txtPhilHealthNumber;
     private JTextField txtTin;
     private JTextField txtPagIbigNumber;
-    private JTextField txtHourlyRate;
-    private JTextField txtSalary;
-
-    private JLabel lblHourlyRate;
-    private JLabel lblSalary;
+    private JTextField txtCompensation;
+    private JLabel lblCompensation;
 
     private JLabel lblGrossSalary;
     private JLabel lblAllowances;
@@ -175,33 +171,21 @@ public class EmployeeManagementFrame extends JFrame {
 
         cmbEmployeeType.addItemListener(e -> {
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                updateUIForEmployeeType();
+                updateCompensationLabel();
+                updateSalaryLabels();
             }
         });
 
-        // Hourly Rate
+        // Compensation
         row++;
         gbc.gridx = 0;
         gbc.gridy = row;
-        lblHourlyRate = new JLabel("Hourly Rate:");
-        lblHourlyRate.setVisible(false);
-        panel.add(lblHourlyRate, gbc);
+        lblCompensation = new JLabel("Basic Salary:");
+        panel.add(lblCompensation, gbc);
         gbc.gridx = 1;
-        txtHourlyRate = new JTextField(20);
-        txtHourlyRate.setVisible(false);
-        attachDocumentListener(txtHourlyRate);
-        panel.add(txtHourlyRate, gbc);
-
-        // Basic Salary
-        row++;
-        gbc.gridx = 0;
-        gbc.gridy = row;
-        lblSalary = new JLabel("Basic Salary:");
-        panel.add(lblSalary, gbc);
-        gbc.gridx = 1;
-        txtSalary = new JTextField(20);
-        attachDocumentListener(txtSalary);
-        panel.add(txtSalary, gbc);
+        txtCompensation = new JTextField(20);
+        attachDocumentListener(txtCompensation);
+        panel.add(txtCompensation, gbc);
 
         // Position Level
         row++;
@@ -453,7 +437,7 @@ public class EmployeeManagementFrame extends JFrame {
         if (employee == null) return;
 
         populateFormWithEmployee(employee);
-        updateUIForEmployeeType();
+        updateCompensationLabel();
         updateSalaryLabels();
     }
 
@@ -538,8 +522,7 @@ public class EmployeeManagementFrame extends JFrame {
         txtPhilHealthNumber.setText("");
         txtTin.setText("");
         txtPagIbigNumber.setText("");
-        txtHourlyRate.setText("");
-        txtSalary.setText("");
+        txtCompensation.setText("");
 
         lblGrossSalary.setText("₱ 0.00");
         lblAllowances.setText("₱ 0.00");
@@ -586,22 +569,13 @@ public class EmployeeManagementFrame extends JFrame {
         }
     }
 
-    private void updateUIForEmployeeType() {
+    private void updateCompensationLabel() {
         String selectedType = (String) cmbEmployeeType.getSelectedItem();
-        boolean isProbationary = "Probationary".equals(selectedType);
-
-        lblHourlyRate.setVisible(isProbationary);
-        txtHourlyRate.setVisible(isProbationary);
-        lblSalary.setVisible(!isProbationary);
-        txtSalary.setVisible(!isProbationary);
-
-        if (!isProbationary) {
-            txtHourlyRate.setText("");
+        if ("Probationary".equals(selectedType)) {
+            lblCompensation.setText("Hourly Rate:");
         } else {
-            txtSalary.setText("");
+            lblCompensation.setText("Basic Salary:");
         }
-
-        updateSalaryLabels();
     }
 
     private void populateFormWithEmployee(Employee employee) {
@@ -618,20 +592,10 @@ public class EmployeeManagementFrame extends JFrame {
         txtPhilHealthNumber.setText(employee.getPhilHealthNumber());
         txtTin.setText(employee.getTin());
         txtPagIbigNumber.setText(employee.getPagIbigNumber());
-
-        if (employee instanceof Probationary) {
-            txtHourlyRate.setText(String.format("%.2f", employee.getCompensation()));
-        } else {
-            txtSalary.setText(String.format("%.2f", employee.getCompensation()));
-        }
+        txtCompensation.setText(String.format("%.2f", employee.getCompensation()));
     }
 
     private double getCompensationFromForm() {
-        String selectedType = (String) cmbEmployeeType.getSelectedItem();
-        if ("Probationary".equals(selectedType)) {
-            return Double.parseDouble(txtHourlyRate.getText().isEmpty() ? "0" : txtHourlyRate.getText().trim());
-        } else {
-            return Double.parseDouble(txtSalary.getText().isEmpty() ? "0" : txtSalary.getText().trim());
-        }
+        return Double.parseDouble(txtCompensation.getText().isEmpty() ? "0" : txtCompensation.getText().trim());
     }
 }
