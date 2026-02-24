@@ -25,6 +25,7 @@ public class EmployeeManagementWindow extends JFrame {
     private final TaxDAO taxDAO;
     private final AttendanceLogDAO attendanceLogDAO;
     private final LeaveDAO leaveDAO;
+    private final Employee currentEmployee;
 
     // Form components
     private JTextField txtId;
@@ -59,13 +60,14 @@ public class EmployeeManagementWindow extends JFrame {
     private JButton btnClear;
     private JButton btnRefresh;
 
-    public EmployeeManagementWindow(EmployeeDAO employeeDAO, AllowanceDAO allowanceDAO, DeductionDAO deductionDAO, TaxDAO taxDAO, AttendanceLogDAO attendanceLogDAO, LeaveDAO leaveDAO) {
+    public EmployeeManagementWindow(EmployeeDAO employeeDAO, AllowanceDAO allowanceDAO, DeductionDAO deductionDAO, TaxDAO taxDAO, AttendanceLogDAO attendanceLogDAO, LeaveDAO leaveDAO, Employee currentEmployee) {
         this.employeeDAO = employeeDAO;
         this.allowanceDAO = allowanceDAO;
         this.deductionDAO = deductionDAO;
         this.taxDAO = taxDAO;
         this.attendanceLogDAO = attendanceLogDAO;
         this.leaveDAO = leaveDAO;
+        this.currentEmployee = currentEmployee;
 
         this.employeeService = new EmployeeService(employeeDAO);
 
@@ -79,16 +81,17 @@ public class EmployeeManagementWindow extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
 
+        add(createTopBar(), BorderLayout.NORTH);
+
         JPanel leftPanel = new JPanel();
         leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
 
-        // Add form panel in a scroll pane
         JScrollPane formScrollPane = new JScrollPane(createFormPanel());
         formScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         formScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         leftPanel.add(formScrollPane);
 
-        leftPanel.add(Box.createVerticalStrut(10)); // Add spacing between panels
+        leftPanel.add(Box.createVerticalStrut(10));
         leftPanel.add(createSalaryPanel());
 
         add(leftPanel, BorderLayout.WEST);
@@ -351,19 +354,40 @@ public class EmployeeManagementWindow extends JFrame {
         btnUpdate = new JButton("Update");
         btnDelete = new JButton("Delete");
         btnClear = new JButton("Clear");
-        JButton btnLeaveManagement = new JButton("Leave Requests");
 
         btnCreate.addActionListener(e -> createEmployee());
         btnUpdate.addActionListener(e -> updateEmployee());
         btnDelete.addActionListener(e -> deleteEmployee());
         btnClear.addActionListener(e -> clearForm());
-        btnLeaveManagement.addActionListener(e -> openLeaveManagement());
 
         panel.add(btnCreate);
         panel.add(btnUpdate);
         panel.add(btnDelete);
         panel.add(btnClear);
-        panel.add(btnLeaveManagement);
+
+        return panel;
+    }
+
+    private JPanel createTopBar() {
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+
+        JLabel titleLabel = new JLabel("Employee Management System");
+        titleLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        panel.add(titleLabel, BorderLayout.WEST);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+
+        JButton btnLeaveManagement = new JButton("Leave Requests");
+        JButton btnLogout = new JButton("Logout");
+
+        btnLeaveManagement.addActionListener(e -> openLeaveManagement());
+        btnLogout.addActionListener(e -> logout());
+
+        buttonPanel.add(btnLeaveManagement);
+        buttonPanel.add(btnLogout);
+
+        panel.add(buttonPanel, BorderLayout.EAST);
 
         return panel;
     }
@@ -609,27 +633,22 @@ public class EmployeeManagementWindow extends JFrame {
     }
 
     private void openLeaveManagement() {
-        int selectedRow = table.getSelectedRow();
-        if (selectedRow < 0) {
-            JOptionPane.showMessageDialog(this,
-                    "Please select an employee first",
-                    "Warning",
-                    JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-
-        int id = Integer.parseInt(tableModel.getValueAt(selectedRow, 0).toString());
-        Employee employee = employeeService.getEmployeeById(id);
-
-        if (employee == null) {
-            JOptionPane.showMessageDialog(this,
-                    "Employee not found",
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-
-        LeaveManagementWindow dialog = new LeaveManagementWindow(this, leaveDAO, employeeDAO, employee);
+        LeaveManagementWindow dialog = new LeaveManagementWindow(this, leaveDAO, employeeDAO, currentEmployee);
         dialog.setVisible(true);
+    }
+
+    private void logout() {
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to logout?",
+                "Logout Confirmation",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            this.dispose();
+            SwingUtilities.invokeLater(() -> {
+                LoginWindow loginWindow = new LoginWindow(employeeDAO, allowanceDAO, deductionDAO, taxDAO, attendanceLogDAO, leaveDAO);
+                loginWindow.setVisible(true);
+            });
+        }
     }
 }

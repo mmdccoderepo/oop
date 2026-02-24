@@ -1,7 +1,6 @@
 package ui;
 
-import dao.EmployeeDAO;
-import dao.LeaveDAO;
+import dao.*;
 import model.Employee;
 import model.HR;
 import model.Leave;
@@ -15,11 +14,17 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
-public class LeaveManagementWindow extends JDialog {
+public class LeaveManagementWindow extends JFrame {
     private final LeaveService leaveService;
+    private final LeaveDAO leaveDAO;
     private final EmployeeDAO employeeDAO;
+    private final AllowanceDAO allowanceDAO;
+    private final DeductionDAO deductionDAO;
+    private final TaxDAO taxDAO;
+    private final AttendanceLogDAO attendanceLogDAO;
     private final Employee currentEmployee;
     private final boolean isHR;
+    private final boolean isStandalone;
 
     private JTable leaveTable;
     private DefaultTableModel tableModel;
@@ -33,20 +38,44 @@ public class LeaveManagementWindow extends JDialog {
     private JLabel lblEmployeeName;
 
     public LeaveManagementWindow(Frame parent, LeaveDAO leaveDAO, EmployeeDAO employeeDAO, Employee currentEmployee) {
-        super(parent, "Leave Management", true);
+        this(leaveDAO, employeeDAO, null, null, null, null, currentEmployee, false);
+    }
+
+    public LeaveManagementWindow(LeaveDAO leaveDAO, EmployeeDAO employeeDAO, AllowanceDAO allowanceDAO,
+                                 DeductionDAO deductionDAO, TaxDAO taxDAO, AttendanceLogDAO attendanceLogDAO,
+                                 Employee currentEmployee) {
+        this(leaveDAO, employeeDAO, allowanceDAO, deductionDAO, taxDAO, attendanceLogDAO, currentEmployee, true);
+    }
+
+    private LeaveManagementWindow(LeaveDAO leaveDAO, EmployeeDAO employeeDAO, AllowanceDAO allowanceDAO,
+                                  DeductionDAO deductionDAO, TaxDAO taxDAO, AttendanceLogDAO attendanceLogDAO,
+                                  Employee currentEmployee, boolean isStandalone) {
         this.leaveService = new LeaveService(leaveDAO);
+        this.leaveDAO = leaveDAO;
         this.employeeDAO = employeeDAO;
+        this.allowanceDAO = allowanceDAO;
+        this.deductionDAO = deductionDAO;
+        this.taxDAO = taxDAO;
+        this.attendanceLogDAO = attendanceLogDAO;
         this.currentEmployee = currentEmployee;
         this.isHR = currentEmployee instanceof HR;
+        this.isStandalone = isStandalone;
 
         initializeUI();
         loadLeaveData();
     }
 
     private void initializeUI() {
+        setTitle("Leave Management");
         setSize(900, 600);
-        setLocationRelativeTo(getParent());
+        setLocationRelativeTo(null);
         setLayout(new BorderLayout(10, 10));
+
+        if (isStandalone) {
+            setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        } else {
+            setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        }
 
         add(createHeaderPanel(), BorderLayout.NORTH);
         add(createTablePanel(), BorderLayout.CENTER);
@@ -57,15 +86,19 @@ public class LeaveManagementWindow extends JDialog {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
+        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
         lblEmployeeName = new JLabel("Employee Name: " + currentEmployee.getFirstName() + " " + currentEmployee.getLastName());
         lblEmployeeName.setFont(new Font("Arial", Font.BOLD, 14));
-        panel.add(lblEmployeeName, BorderLayout.WEST);
+        leftPanel.add(lblEmployeeName);
 
-        if (isHR) {
-            JLabel lblRole = new JLabel("Role: HR");
-            lblRole.setFont(new Font("Arial", Font.BOLD, 14));
-            lblRole.setForeground(new Color(0, 100, 0));
-            panel.add(lblRole, BorderLayout.EAST);
+        panel.add(leftPanel, BorderLayout.WEST);
+
+        if (isStandalone) {
+            JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+            JButton btnLogout = new JButton("Logout");
+            btnLogout.addActionListener(e -> logout());
+            rightPanel.add(btnLogout);
+            panel.add(rightPanel, BorderLayout.EAST);
         }
 
         return panel;
@@ -116,8 +149,15 @@ public class LeaveManagementWindow extends JDialog {
         }
 
         JButton btnClose = new JButton("Close");
-        btnClose.addActionListener(e -> dispose());
+        btnClose.addActionListener(e -> {
+            if (isStandalone) {
+                System.exit(0);
+            } else {
+                dispose();
+            }
+        });
         buttonPanel.add(btnClose);
+
 
         mainPanel.add(buttonPanel, BorderLayout.CENTER);
 
@@ -319,6 +359,25 @@ public class LeaveManagementWindow extends JDialog {
         }
 
         JOptionPane.showMessageDialog(this, message, title, messageType);
+    }
+
+    private void logout() {
+        if (!isStandalone) {
+            return;
+        }
+
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "Are you sure you want to logout?",
+                "Logout Confirmation",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            this.dispose();
+            SwingUtilities.invokeLater(() -> {
+                LoginWindow loginWindow = new LoginWindow(employeeDAO, allowanceDAO, deductionDAO, taxDAO, attendanceLogDAO, leaveDAO);
+                loginWindow.setVisible(true);
+            });
+        }
     }
 }
 

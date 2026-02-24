@@ -1,0 +1,9 @@
+id,employeeId,startDate,endDate,status,reason
+1,1,2026-03-01,2026-03-05,APPROVED,Birthday
+2,1,2026-03-01,2026-03-05,PENDING,Moving
+3,1,2026-03-02,2026-03-03,PENDING,Vacation Leave
+4,2,2026-03-04,2026-03-04,PENDING,Sick Leave
+5,3,2026-03-04,2026-03-04,REJECTED,Vacation Leave
+6,3,2026-03-04,2026-03-04,PENDING,Vacation Leave
+7,3,2026-03-05,2026-03-05,PENDING,Medical Appointment
+8,2,2026-03-05,2026-03-05,PENDING,Driver's License Renewal

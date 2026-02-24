@@ -1,8 +1,6 @@
 package dao;
 
-import model.Employee;
-import model.Probationary;
-import model.Regular;
+import model.*;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -135,7 +133,20 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
                     employee = new Probationary(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, department, sssNumber, philHealthNumber, tin, pagIbigNumber, compensation);
                     break;
                 case "Regular":
-                    employee = new Regular(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, department, sssNumber, philHealthNumber, tin, pagIbigNumber, compensation);
+                    switch (department) {
+                        case "HR":
+                            employee = new HR(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, department, sssNumber, philHealthNumber, tin, pagIbigNumber, compensation);
+                            break;
+                        case "Finance":
+                            employee = new Finance(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, department, sssNumber, philHealthNumber, tin, pagIbigNumber, compensation);
+                            break;
+                        case "IT":
+                            employee = new IT(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, department, sssNumber, philHealthNumber, tin, pagIbigNumber, compensation);
+                            break;
+                        default:
+                            employee = new Regular(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, department, sssNumber, philHealthNumber, tin, pagIbigNumber, compensation);
+                            break;
+                    }
                     break;
                 default:
                     return null;

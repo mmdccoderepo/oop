@@ -1,4 +1,0 @@
-id,employeeId,startDate,endDate,status,reason
-1,1,2026-03-01,2026-03-05,PENDING,
-2,1,2026-03-01,2026-03-05,PENDING,
-3,1,2026-03-02,2026-03-03,PENDING,Vacation Leave
