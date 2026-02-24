@@ -17,13 +17,14 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EmployeeManagementFrame extends JFrame {
-
+public class EmployeeManagementWindow extends JFrame {
+    private final EmployeeService employeeService;
     private final EmployeeDAO employeeDAO;
     private final AllowanceDAO allowanceDAO;
     private final DeductionDAO deductionDAO;
     private final TaxDAO taxDAO;
     private final AttendanceLogDAO attendanceLogDAO;
+    private final LeaveDAO leaveDAO;
 
     // Form components
     private JTextField txtId;
@@ -58,12 +59,16 @@ public class EmployeeManagementFrame extends JFrame {
     private JButton btnClear;
     private JButton btnRefresh;
 
-    public EmployeeManagementFrame(EmployeeDAO employeeDAO, AllowanceDAO allowanceDAO, DeductionDAO deductionDAO, TaxDAO taxDAO, AttendanceLogDAO attendanceLogDAO) {
+    public EmployeeManagementWindow(EmployeeDAO employeeDAO, AllowanceDAO allowanceDAO, DeductionDAO deductionDAO, TaxDAO taxDAO, AttendanceLogDAO attendanceLogDAO, LeaveDAO leaveDAO) {
         this.employeeDAO = employeeDAO;
         this.allowanceDAO = allowanceDAO;
         this.deductionDAO = deductionDAO;
         this.taxDAO = taxDAO;
         this.attendanceLogDAO = attendanceLogDAO;
+        this.leaveDAO = leaveDAO;
+
+        this.employeeService = new EmployeeService(employeeDAO);
+
         initializeUI();
         loadTableData();
     }
@@ -346,16 +351,19 @@ public class EmployeeManagementFrame extends JFrame {
         btnUpdate = new JButton("Update");
         btnDelete = new JButton("Delete");
         btnClear = new JButton("Clear");
+        JButton btnLeaveManagement = new JButton("Leave Requests");
 
         btnCreate.addActionListener(e -> createEmployee());
         btnUpdate.addActionListener(e -> updateEmployee());
         btnDelete.addActionListener(e -> deleteEmployee());
         btnClear.addActionListener(e -> clearForm());
+        btnLeaveManagement.addActionListener(e -> openLeaveManagement());
 
         panel.add(btnCreate);
         panel.add(btnUpdate);
         panel.add(btnDelete);
         panel.add(btnClear);
+        panel.add(btnLeaveManagement);
 
         return panel;
     }
@@ -442,6 +450,7 @@ public class EmployeeManagementFrame extends JFrame {
     }
 
     private void loadTableData() {
+        // TODO: Move employeeDAO to a service layer for business logic data validation
         List<Employee> employees = employeeDAO.getAll();
         updateTable(employees);
     }
@@ -476,8 +485,8 @@ public class EmployeeManagementFrame extends JFrame {
                                     String tin, String pagIbigNumber) {
         double compensation = getCompensationFromForm();
 
-        Employee employee = EmployeeService.createEmployee(employeeType, id, firstName, lastName,
-                email, phone, address, positionLevel, department, sssNumber, philHealthNumber,
+        Employee employee = employeeService.createEmployee(id, firstName, lastName,
+                email, phone, address, employeeType, positionLevel, department, sssNumber, philHealthNumber,
                 tin, pagIbigNumber, compensation);
 
         int totalHoursWorked = attendanceLogDAO.getTotalHoursWorked(id);
@@ -597,5 +606,30 @@ public class EmployeeManagementFrame extends JFrame {
 
     private double getCompensationFromForm() {
         return Double.parseDouble(txtCompensation.getText().isEmpty() ? "0" : txtCompensation.getText().trim());
+    }
+
+    private void openLeaveManagement() {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow < 0) {
+            JOptionPane.showMessageDialog(this,
+                    "Please select an employee first",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        int id = Integer.parseInt(tableModel.getValueAt(selectedRow, 0).toString());
+        Employee employee = employeeService.getEmployeeById(id);
+
+        if (employee == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Employee not found",
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        LeaveManagementWindow dialog = new LeaveManagementWindow(this, leaveDAO, employeeDAO, employee);
+        dialog.setVisible(true);
     }
 }

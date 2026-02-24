@@ -1,5 +1,5 @@
 import dao.*;
-import ui.EmployeeManagementFrame;
+import ui.EmployeeManagementWindow;
 
 import javax.swing.*;
 
@@ -17,8 +17,9 @@ public class Main {
             DeductionDAO deductionDAO = new CSVDeductionDAO();
             TaxDAO taxDAO = new CSVTaxDAO();
             AttendanceLogDAO attendanceLogDAO = new CSVAttendanceLogDAO();
+            LeaveDAO leaveDAO = new CSVLeaveDAO();
 
-            EmployeeManagementFrame frame = new EmployeeManagementFrame(employeeDAO, allowanceDAO, deductionDAO, taxDAO, attendanceLogDAO);
+            EmployeeManagementWindow frame = new EmployeeManagementWindow(employeeDAO, allowanceDAO, deductionDAO, taxDAO, attendanceLogDAO, leaveDAO);
             frame.setVisible(true);
         });
     }
