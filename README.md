@@ -96,7 +96,7 @@ Click the **Logout** button in the top bar to return to the login screen.
 
 All data is stored in CSV files located in `src/main/resources/`:
 
-- `employees.csv` - Employee records
+- `EmployeeDetails.csv` - Employee records (updated source name)
 - `leaves.csv` - Leave requests
 - `allowances.csv` - Employee allowances
 - `deductions.csv` - Employee deductions

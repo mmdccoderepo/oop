@@ -2,6 +2,7 @@ package ui;
 
 import dao.*;
 import model.Employee;
+import java.util.List;
 
 import javax.swing.*;
 import java.awt.*;
@@ -108,22 +109,8 @@ public class LoginWindow extends JFrame {
     private void handleLogin() {
         String role = (String) cmbRole.getSelectedItem();
 
-        int employeeId;
-        switch (role) {
-            case "HR":
-                employeeId = 1;
-                break;
-            case "Finance":
-                employeeId = 3;
-                break;
-            case "IT":
-                employeeId = 2;
-                break;
-            default:
-                employeeId = 1;
-        }
-
-        Employee employee = employeeDAO.read(employeeId);
+        // find a matching employee based on department/role
+        Employee employee = findEmployeeByRole(role);
 
         if (employee == null) {
             JOptionPane.showMessageDialog(this,
@@ -148,6 +135,18 @@ public class LoginWindow extends JFrame {
                 leaveWindow.setVisible(true);
             });
         }
+    }
+
+    private Employee findEmployeeByRole(String role) {
+        if (role == null) {
+            return null;
+        }
+        for (Employee e : employeeDAO.getAll()) {
+            if (role.equalsIgnoreCase(e.getDepartment())) {
+                return e;
+            }
+        }
+        return null;
     }
 }
 
