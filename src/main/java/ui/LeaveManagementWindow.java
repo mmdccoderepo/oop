@@ -86,14 +86,14 @@ public class LeaveManagementWindow extends JFrame {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        lblEmployeeName = new JLabel("Employee Name: " + currentEmployee.getFirstName() + " " + currentEmployee.getLastName());
-        lblEmployeeName.setFont(new Font("Arial", Font.BOLD, 14));
-        leftPanel.add(lblEmployeeName);
-
-        panel.add(leftPanel, BorderLayout.WEST);
-
         if (isStandalone) {
+            JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+            lblEmployeeName = new JLabel("Employee Name: " + currentEmployee.getFirstName() + " " + currentEmployee.getLastName());
+            lblEmployeeName.setFont(new Font("Arial", Font.BOLD, 14));
+            leftPanel.add(lblEmployeeName);
+
+            panel.add(leftPanel, BorderLayout.WEST);
+            
             JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
             JButton btnLogout = new JButton("Logout");
             btnLogout.addActionListener(e -> logout());

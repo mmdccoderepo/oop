@@ -211,7 +211,7 @@ public class EmployeeManagementWindow extends JFrame {
         gbc.gridy = row;
         panel.add(new JLabel("Department:"), gbc);
         gbc.gridx = 1;
-        String[] departments = {"HR", "Finance", "IT"};
+        String[] departments = {"HR", "Finance", "IT", "Sales", "Marketing", "Operations"};
         cmbDepartment = new JComboBox<>(departments);
         panel.add(cmbDepartment, gbc);
 
@@ -395,15 +395,12 @@ public class EmployeeManagementWindow extends JFrame {
     private void createEmployee() {
         try {
             Employee employee = getEmployeeFromForm();
-            employee.setId(0);
-
-            if (employeeDAO.create(employee)) {
-                JOptionPane.showMessageDialog(this, "Employee created successfully!");
-                loadTableData();
-                clearForm();
-            } else {
-                JOptionPane.showMessageDialog(this, "Failed to create employee!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            employeeService.addEmployee(employee);
+            JOptionPane.showMessageDialog(this, "Employee created successfully!");
+            loadTableData();
+            clearForm();
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Validation Error", JOptionPane.WARNING_MESSAGE);
         } catch (Exception e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -418,14 +415,12 @@ public class EmployeeManagementWindow extends JFrame {
             }
 
             Employee employee = getEmployeeFromForm();
-
-            if (employeeDAO.update(employee)) {
-                JOptionPane.showMessageDialog(this, "Employee updated successfully!");
-                loadTableData();
-                clearForm();
-            } else {
-                JOptionPane.showMessageDialog(this, "Failed to update employee!", "Error", JOptionPane.ERROR_MESSAGE);
-            }
+            employeeService.updateEmployee(employee);
+            JOptionPane.showMessageDialog(this, "Employee updated successfully!");
+            loadTableData();
+            clearForm();
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Validation Error", JOptionPane.WARNING_MESSAGE);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -445,15 +440,13 @@ public class EmployeeManagementWindow extends JFrame {
 
             if (confirm == JOptionPane.YES_OPTION) {
                 int id = Integer.parseInt(txtId.getText());
-
-                if (employeeDAO.delete(id)) {
-                    JOptionPane.showMessageDialog(this, "Employee deleted successfully!");
-                    loadTableData();
-                    clearForm();
-                } else {
-                    JOptionPane.showMessageDialog(this, "Failed to delete employee!", "Error", JOptionPane.ERROR_MESSAGE);
-                }
+                employeeService.deleteEmployee(id);
+                JOptionPane.showMessageDialog(this, "Employee deleted successfully!");
+                loadTableData();
+                clearForm();
             }
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Validation Error", JOptionPane.WARNING_MESSAGE);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -464,9 +457,13 @@ public class EmployeeManagementWindow extends JFrame {
         if (selectedRow < 0) return;
 
         int id = Integer.parseInt(tableModel.getValueAt(selectedRow, 0).toString());
-        Employee employee = employeeDAO.read(id);
-
-        if (employee == null) return;
+        Employee employee;
+        try {
+            employee = employeeService.getEmployeeById(id);
+        } catch (IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
 
         populateFormWithEmployee(employee);
         updateCompensationLabel();
@@ -474,8 +471,7 @@ public class EmployeeManagementWindow extends JFrame {
     }
 
     private void loadTableData() {
-        // TODO: Move employeeDAO to a service layer for business logic data validation
-        List<Employee> employees = employeeDAO.getAll();
+        List<Employee> employees = employeeService.getAllEmployees();
         updateTable(employees);
     }
 
@@ -488,6 +484,7 @@ public class EmployeeManagementWindow extends JFrame {
                     emp.getLastName(),
                     emp.getEmail(),
                     emp.getPhoneNumber(),
+                    emp.getAddress(),
                     emp.getEmployeeType(),
                     emp.getPositionLevel(),
                     emp.getDepartment(),

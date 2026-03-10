@@ -7,8 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
-    // use the updated source file with detailed employee information
-    private final String filePath = getResourceFilePath("EmployeeDetails.csv");
+    private final String filePath = getResourceFilePath("employees.csv");
 
     public CSVEmployeeDAO() {
     }
@@ -38,6 +37,7 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
         List<Employee> employees = getAll();
 
         for (Employee employee : employees) {
+            System.out.println("Checking employee ID: " + employee.getId() + " against " + id);
             if (employee.getId() == id) {
                 return employee;
             }
@@ -109,66 +109,71 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
     }
 
     private Employee csvToEmployee(String line) {
-        // skip header row (starts with "Employee")
-        if (line.trim().startsWith("\"Employee")) {
+        if (line.trim().isEmpty()) {
+            return null;
+        }
+        // skip header row
+        if (line.startsWith("id,")) {
             return null;
         }
 
-        // split on commas not inside quotes
         String[] parts = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)", -1);
 
-        // strip surrounding quotes
         for (int i = 0; i < parts.length; i++) {
-            parts[i] = parts[i].replaceAll("^\"|\"$", "");
+            parts[i] = parts[i].replaceAll("^\"|\"$", "").trim();
+        }
+
+        if (parts.length < 14) {
+            return null;
         }
 
         try {
-            int id = Integer.parseInt(parts[0]);
-            String lastName = parts.length > 1 ? parts[1] : "";
-            String firstName = parts.length > 2 ? parts[2] : "";
-            String address = parts.length > 4 ? parts[4] : "";
-            String phoneNumber = parts.length > 5 ? parts[5] : "";
-            String sssNumber = parts.length > 6 ? parts[6] : "";
-            String philHealthNumber = parts.length > 7 ? parts[7] : "";
-            String tin = parts.length > 8 ? parts[8] : "";
-            String pagIbigNumber = parts.length > 9 ? parts[9] : "";
-            String employeeType = parts.length > 10 ? parts[10] : ""; // Status
-            String positionLevel = parts.length > 11 ? parts[11] : ""; // Position
-            String department = deriveDepartment(positionLevel);
+            int id = Integer.parseInt(parts[0].trim());
+            String firstName = parts[1];
+            String lastName = parts[2];
+            String email = parts[3];
+            String phoneNumber = parts[4];
+            String address = parts[5];
+            String employeeType = parts[6];
+            String positionLevel = parts[7];
+            String department = parts[8];
+            String sssNumber = parts[9];
+            String philHealthNumber = parts[10];
+            String tin = parts[11];
+            String pagIbigNumber = parts[12];
 
             double compensation = 0.0;
-            if (parts.length > 17 && !parts[17].isEmpty()) {
-                try {
-                    compensation = Double.parseDouble(parts[17]);
-                } catch (NumberFormatException ignored) {}
+            try {
+                compensation = Double.parseDouble(parts[13].trim());
+            } catch (NumberFormatException ignored) {
             }
 
             Employee employee;
             switch (employeeType) {
                 case "Probationary":
-                    employee = new Probationary(id, firstName, lastName, "", phoneNumber, address,
+                    employee = new Probationary(id, firstName, lastName, email, phoneNumber, address,
                             employeeType, positionLevel, department, sssNumber, philHealthNumber,
                             tin, pagIbigNumber, compensation);
                     break;
                 case "Regular":
                     switch (department) {
                         case "HR":
-                            employee = new HR(id, firstName, lastName, "", phoneNumber, address,
+                            employee = new HR(id, firstName, lastName, email, phoneNumber, address,
                                     employeeType, positionLevel, department, sssNumber, philHealthNumber,
                                     tin, pagIbigNumber, compensation);
                             break;
                         case "Finance":
-                            employee = new Finance(id, firstName, lastName, "", phoneNumber, address,
+                            employee = new Finance(id, firstName, lastName, email, phoneNumber, address,
                                     employeeType, positionLevel, department, sssNumber, philHealthNumber,
                                     tin, pagIbigNumber, compensation);
                             break;
                         case "IT":
-                            employee = new IT(id, firstName, lastName, "", phoneNumber, address,
+                            employee = new IT(id, firstName, lastName, email, phoneNumber, address,
                                     employeeType, positionLevel, department, sssNumber, philHealthNumber,
                                     tin, pagIbigNumber, compensation);
                             break;
                         default:
-                            employee = new Regular(id, firstName, lastName, "", phoneNumber, address,
+                            employee = new Regular(id, firstName, lastName, email, phoneNumber, address,
                                     employeeType, positionLevel, department, sssNumber, philHealthNumber,
                                     tin, pagIbigNumber, compensation);
                             break;
@@ -186,8 +191,7 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
 
     private boolean writeAll(List<Employee> employees) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
-            // include header for EmployeeDetails format
-            writer.write(getHeader());
+            writer.write("id,firstName,lastName,email,phoneNumber,address,employeeType,positionLevel,department,sssNumber,philHealthNumber,tin,pagIbigNumber,compensation");
             writer.newLine();
             for (Employee employee : employees) {
                 writer.write(employeeToCsv(employee));
@@ -201,55 +205,34 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
     }
 
     private String employeeToCsv(Employee employee) {
-        // produce minimal output in same column order as details file
-        return String.format(
-                "\"%d\",\"%s\",\"%s\",\"\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"\",\"\",\"\",\"\",\"%.2f\",\"\"",
+        String address = employee.getAddress().contains(",")
+                ? "\"" + employee.getAddress() + "\""
+                : employee.getAddress();
+        return String.format("%d,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%.2f",
                 employee.getId(),
-                employee.getLastName(),
                 employee.getFirstName(),
-                employee.getAddress(),
+                employee.getLastName(),
+                employee.getEmail(),
                 employee.getPhoneNumber(),
+                address,
+                employee.getEmployeeType(),
+                employee.getPositionLevel(),
+                employee.getDepartment(),
                 employee.getSssNumber(),
                 employee.getPhilHealthNumber(),
                 employee.getTin(),
                 employee.getPagIbigNumber(),
-                employee.getEmployeeType(),
-                employee.getPositionLevel(),
-                employee.getDepartment(),
                 employee.getCompensation());
     }
 
     private int getMaxId() {
         List<Employee> employees = getAll();
         int maxId = 0;
-
         for (Employee employee : employees) {
             if (employee.getId() > maxId) {
                 maxId = employee.getId();
             }
         }
-
         return maxId;
     }
-
-    // help derive a simple department identifier from position/title
-    private String deriveDepartment(String position) {
-        if (position == null) {
-            return "";
-        }
-        String lower = position.toLowerCase();
-        if (lower.contains("hr")) {
-            return "HR";
-        }
-        if (lower.contains("finance") || lower.contains("account")) {
-            return "Finance";
-        }
-        if (lower.contains("it")) {
-            return "IT";
-        }
-        return "";
-    }
-
-    private String getHeader() {
-        return "\"Employee #\",\"Last Name\",\"First Name\",\"Birthday\",\"Address\",\"Phone Number\",\"SSS #\",\"Philhealth #\",\"TIN #\",\"Pag-ibig #\",\"Status\",\"Position\",\"Immediate Supervisor\",\"Basic Salary\",\"Rice Subsidy\",\"Phone Allowance\",\"Clothing Allowance\",\"Gross Semi-monthly Rate\",\"Hourly Rate\"";
-    }}
+}
