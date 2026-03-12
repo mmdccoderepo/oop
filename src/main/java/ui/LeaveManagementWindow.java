@@ -2,7 +2,6 @@ package ui;
 
 import dao.*;
 import model.Employee;
-import model.HR;
 import model.Leave;
 import service.LeaveService;
 
@@ -58,11 +57,59 @@ public class LeaveManagementWindow extends JFrame {
         this.taxDAO = taxDAO;
         this.attendanceLogDAO = attendanceLogDAO;
         this.currentEmployee = currentEmployee;
-        this.isHR = currentEmployee instanceof HR;
+        this.isHR = "HR".equals(currentEmployee.getRole());
         this.isStandalone = isStandalone;
 
         initializeUI();
         loadLeaveData();
+    }
+
+    private JMenuBar createMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+
+        // View Menu
+        JMenu viewMenu = new JMenu("View");
+
+        JMenuItem viewTimeInOutItem = new JMenuItem("Time In / Out");
+        viewTimeInOutItem.setMargin(new Insets(2, 2, 2, 2));
+        viewTimeInOutItem.addActionListener(e -> openTimeInOut());
+        viewMenu.add(viewTimeInOutItem);
+
+        viewMenu.addSeparator();
+
+        JMenuItem viewAttendanceItem = new JMenuItem("Attendance Logs");
+        viewAttendanceItem.setMargin(new Insets(2, 2, 2, 2));
+        viewAttendanceItem.addActionListener(e -> openAttendanceLogs());
+        viewMenu.add(viewAttendanceItem);
+
+        menuBar.add(viewMenu);
+
+        // Account Menu
+        JMenu accountMenu = new JMenu("Account");
+
+        JMenuItem logoutItem = new JMenuItem("Logout");
+        logoutItem.setMargin(new Insets(2, 2, 2, 2));
+        logoutItem.addActionListener(e -> logout());
+        accountMenu.add(logoutItem);
+
+        menuBar.add(accountMenu);
+
+        return menuBar;
+    }
+
+    private void openTimeInOut() {
+        this.dispose();
+        SwingUtilities.invokeLater(() -> {
+            TimeInOutWindow timeWindow = new TimeInOutWindow(
+                    employeeDAO, allowanceDAO, deductionDAO, taxDAO, attendanceLogDAO, leaveDAO, currentEmployee);
+            timeWindow.setVisible(true);
+        });
+    }
+
+    private void openAttendanceLogs() {
+        AttendanceLogsWindow attendanceWindow = new AttendanceLogsWindow(
+                this, attendanceLogDAO, employeeDAO, currentEmployee);
+        attendanceWindow.setVisible(true);
     }
 
     private void initializeUI() {
@@ -73,6 +120,7 @@ public class LeaveManagementWindow extends JFrame {
 
         if (isStandalone) {
             setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            setJMenuBar(createMenuBar());
         } else {
             setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         }
@@ -86,19 +134,10 @@ public class LeaveManagementWindow extends JFrame {
         JPanel panel = new JPanel(new BorderLayout(10, 10));
         panel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
-        lblEmployeeName = new JLabel("Employee Name: " + currentEmployee.getFirstName() + " " + currentEmployee.getLastName());
-        lblEmployeeName.setFont(new Font("Arial", Font.BOLD, 14));
-        leftPanel.add(lblEmployeeName);
-
-        panel.add(leftPanel, BorderLayout.WEST);
-
         if (isStandalone) {
-            JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
-            JButton btnLogout = new JButton("Logout");
-            btnLogout.addActionListener(e -> logout());
-            rightPanel.add(btnLogout);
-            panel.add(rightPanel, BorderLayout.EAST);
+            lblEmployeeName = new JLabel("Logged in as: " + currentEmployee.getFirstName() + " " + currentEmployee.getLastName());
+            lblEmployeeName.setFont(new Font("Arial", Font.BOLD, 14));
+            panel.add(lblEmployeeName, BorderLayout.WEST);
         }
 
         return panel;
@@ -147,16 +186,6 @@ public class LeaveManagementWindow extends JFrame {
             btnReject.addActionListener(e -> rejectLeave());
             buttonPanel.add(btnReject);
         }
-
-        JButton btnClose = new JButton("Close");
-        btnClose.addActionListener(e -> {
-            if (isStandalone) {
-                System.exit(0);
-            } else {
-                dispose();
-            }
-        });
-        buttonPanel.add(btnClose);
 
 
         mainPanel.add(buttonPanel, BorderLayout.CENTER);

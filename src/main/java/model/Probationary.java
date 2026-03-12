@@ -4,9 +4,9 @@ public class Probationary extends Employee {
     private double hourlyRate;
 
     public Probationary(int id, String firstName, String lastName, String email, String phoneNumber, String address,
-                        String employeeType, String positionLevel, String department, String sssNumber,
+                        String employeeType, String positionLevel, String role, String sssNumber,
                         String philHealthNumber, String tin, String pagIbigNumber, double hourlyRate) {
-        super(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, department, sssNumber,
+        super(id, firstName, lastName, email, phoneNumber, address, employeeType, positionLevel, role, sssNumber,
                 philHealthNumber, tin, pagIbigNumber);
         setHourlyRate(hourlyRate);
     }
