@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 
 public class CSVUserAccountDAO extends CSVBaseDAO implements UserAccountDAO {
 
@@ -14,6 +16,28 @@ public class CSVUserAccountDAO extends CSVBaseDAO implements UserAccountDAO {
     @Override
     public Map<String, String> getAll() {
         return loadAccounts();
+    }
+     @Override
+    public boolean create(String username, String password) {
+        File file = new File(filePath);
+        boolean isNewFile = !file.exists();
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
+
+            // If the file is new, write header first
+            if (isNewFile) {
+                writer.write("Username,Password");
+                writer.newLine();
+            }
+
+            writer.write(username + "," + password);
+            writer.newLine();
+            return true;
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private Map<String, String> loadAccounts() {
