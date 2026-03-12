@@ -1,10 +1,34 @@
 positionLevel,name,amount
-Rank and File,Rice Subsidy,1500.0
-Rank and File,Phone Allowance,800.0
-Rank and File,Clothing Allowance,1000.0
-Supervisory,Rice Subsidy,2000.0
-Supervisory,Phone Allowance,1200.0
-Supervisory,Clothing Allowance,1500.0
-Managerial,Rice Subsidy,2500.0
-Managerial,Phone Allowance,1500.0
-Managerial,Clothing Allowance,2000.0
+Rank and File,Rice Subsidy,750.0
+Rank and File,Phone Allowance,250.0
+Rank and File,Clothing Allowance,250.0
+Supervisory,Rice Subsidy,750.0
+Supervisory,Phone Allowance,400.0
+Supervisory,Clothing Allowance,400.0
+Managerial,Rice Subsidy,750.0
+Managerial,Phone Allowance,500.0
+Managerial,Clothing Allowance,500.0
+Chief Executive Officer,Rice Subsidy,750.0
+Chief Executive Officer,Phone Allowance,1000.0
+Chief Executive Officer,Clothing Allowance,500.0
+Chief Operating Officer,Rice Subsidy,750.0
+Chief Operating Officer,Phone Allowance,1000.0
+Chief Operating Officer,Clothing Allowance,500.0
+Chief Finance Officer,Rice Subsidy,750.0
+Chief Finance Officer,Phone Allowance,1000.0
+Chief Finance Officer,Clothing Allowance,500.0
+Chief Marketing Officer,Rice Subsidy,750.0
+Chief Marketing Officer,Phone Allowance,1000.0
+Chief Marketing Officer,Clothing Allowance,500.0
+IT Operations and Systems,Rice Subsidy,750.0
+IT Operations and Systems,Phone Allowance,500.0
+IT Operations and Systems,Clothing Allowance,500.0
+Sales and Marketing,Rice Subsidy,750.0
+Sales and Marketing,Phone Allowance,500.0
+Sales and Marketing,Clothing Allowance,500.0
+Supply Chain and Logistics,Rice Subsidy,750.0
+Supply Chain and Logistics,Phone Allowance,500.0
+Supply Chain and Logistics,Clothing Allowance,500.0
+Customer Service and Relations,Rice Subsidy,750.0
+Customer Service and Relations,Phone Allowance,500.0
+Customer Service and Relations,Clothing Allowance,500.0
