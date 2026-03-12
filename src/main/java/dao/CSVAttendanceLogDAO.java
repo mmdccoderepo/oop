@@ -2,10 +2,7 @@ package dao;
 
 import model.AttendanceLog;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -81,6 +78,22 @@ public class CSVAttendanceLogDAO extends CSVBaseDAO implements AttendanceLogDAO 
         return totalHours;
     }
 
+    @Override
+    public int getHoursWorkedInRange(int employeeId, LocalDate startDate, LocalDate endDate) {
+        List<AttendanceLog> employeeLogs = getByEmployeeId(employeeId);
+        int totalHours = 0;
+
+        for (AttendanceLog log : employeeLogs) {
+            LocalDate logDate = log.getDate();
+            if ((logDate.isEqual(startDate) || logDate.isAfter(startDate)) &&
+                    (logDate.isEqual(endDate) || logDate.isBefore(endDate))) {
+                totalHours += log.getHoursWorked();
+            }
+        }
+
+        return totalHours;
+    }
+
     private AttendanceLog csvToAttendanceLog(String line) {
         String[] parts = line.split(",", -1);
 
@@ -94,6 +107,29 @@ public class CSVAttendanceLogDAO extends CSVBaseDAO implements AttendanceLogDAO 
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        }
+    }
+
+    @Override
+    public boolean addLog(AttendanceLog log) {
+        File file = new File(filePath);
+        boolean needsHeader = !file.exists() || file.length() == 0;
+
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file, true))) {
+            if (needsHeader) {
+                writer.write("employeeId,date,timeIn,timeOut");
+                writer.newLine();
+            }
+            writer.write(String.format("%d,%s,%s,%s",
+                    log.getEmployeeId(),
+                    log.getDate().format(DATE_FORMAT),
+                    log.getTimeIn().format(TIME_FORMAT),
+                    log.getTimeOut().format(TIME_FORMAT)));
+            writer.newLine();
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }

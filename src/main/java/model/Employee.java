@@ -12,7 +12,7 @@ abstract public class Employee implements Payable {
     private String address;
     private String employeeType;
     private String positionLevel;
-    private String department;
+    private String role;
     private String sssNumber;
     private String philHealthNumber;
     private String tin;
@@ -24,7 +24,7 @@ abstract public class Employee implements Payable {
     private final List<TaxBracket> taxBrackets = new ArrayList<>();
 
     public Employee(int id, String firstName, String lastName, String email, String phoneNumber, String address,
-                    String employeeType, String positionLevel, String department, String sssNumber,
+                    String employeeType, String positionLevel, String role, String sssNumber,
                     String philHealthNumber, String tin, String pagIbigNumber) {
         this.id = id;
         this.firstName = firstName;
@@ -34,7 +34,7 @@ abstract public class Employee implements Payable {
         this.address = address;
         this.employeeType = employeeType;
         this.positionLevel = positionLevel;
-        this.department = department;
+        this.role = role;
         this.sssNumber = sssNumber;
         this.philHealthNumber = philHealthNumber;
         this.tin = tin;
@@ -74,8 +74,8 @@ abstract public class Employee implements Payable {
         return positionLevel;
     }
 
-    public String getDepartment() {
-        return department;
+    public String getRole() {
+        return role;
     }
 
     public String getSssNumber() {
@@ -127,8 +127,8 @@ abstract public class Employee implements Payable {
         this.positionLevel = positionLevel;
     }
 
-    public void setDepartment(String department) {
-        this.department = department;
+    public void setRole(String role) {
+        this.role = role;
     }
 
     public void setSssNumber(String sssNumber) {
@@ -192,6 +192,11 @@ abstract public class Employee implements Payable {
     }
 
     public double computeDeductions() {
+        // If no hours worked, no deductions
+        if (getHoursWorked() == 0) {
+            return 0.0;
+        }
+
         double gross = computeGrossSalary();
         double totalDeductions = 0.0;
         totalDeductions += getDeduction("SSS", gross);
@@ -229,6 +234,11 @@ abstract public class Employee implements Payable {
     }
 
     public double computeTax() {
+        // If no hours worked, no tax
+        if (getHoursWorked() == 0) {
+            return 0.0;
+        }
+
         double taxableIncome = computeGrossSalary() + computeAllowances();
 
         if (taxBrackets.isEmpty()) {

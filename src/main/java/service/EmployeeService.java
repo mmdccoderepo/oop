@@ -28,20 +28,35 @@ public class EmployeeService {
         if (employee.getPhoneNumber() == null || employee.getPhoneNumber().isBlank()) {
             throw new IllegalArgumentException("Phone number is required.");
         }
+        if (!employee.getPhoneNumber().matches("^[\\d\\-\\s()]+$")) {
+            throw new IllegalArgumentException("Phone number must contain only digits, dashes, spaces, or parentheses (e.g. 966-860-270).");
+        }
         if (employee.getAddress() == null || employee.getAddress().isBlank()) {
             throw new IllegalArgumentException("Address is required.");
         }
         if (employee.getSssNumber() == null || employee.getSssNumber().isBlank()) {
             throw new IllegalArgumentException("SSS number is required.");
         }
+        if (!employee.getSssNumber().matches("^\\d{2}-\\d{7}-\\d$")) {
+            throw new IllegalArgumentException("SSS number must be in the format ##-#######-# (e.g. 44-4506057-3).");
+        }
         if (employee.getPhilHealthNumber() == null || employee.getPhilHealthNumber().isBlank()) {
             throw new IllegalArgumentException("PhilHealth number is required.");
+        }
+        if (!employee.getPhilHealthNumber().matches("^\\d{12}$")) {
+            throw new IllegalArgumentException("PhilHealth number must be exactly 12 digits (e.g. 820126853951).");
         }
         if (employee.getTin() == null || employee.getTin().isBlank()) {
             throw new IllegalArgumentException("TIN is required.");
         }
+        if (!employee.getTin().matches("^\\d{3}-\\d{3}-\\d{3}-\\d{3}$")) {
+            throw new IllegalArgumentException("TIN must be in the format ###-###-###-### (e.g. 442-605-657-000).");
+        }
         if (employee.getPagIbigNumber() == null || employee.getPagIbigNumber().isBlank()) {
             throw new IllegalArgumentException("Pag-IBIG number is required.");
+        }
+        if (!employee.getPagIbigNumber().matches("^\\d{12}$")) {
+            throw new IllegalArgumentException("Pag-IBIG number must be exactly 12 digits (e.g. 691295330870).");
         }
         if (employee.getCompensation() <= 0) {
             throw new IllegalArgumentException("Compensation must be greater than zero.");
@@ -84,31 +99,31 @@ public class EmployeeService {
 
     public Employee createEmployee(int id, String firstName,
                                    String lastName, String email, String phone,
-                                   String address, String employeeType, String positionLevel, String department,
+                                   String address, String employeeType, String positionLevel, String role,
                                    String sssNumber, String philHealthNumber,
                                    String tin, String pagIbigNumber, double compensation) {
         switch (employeeType) {
             case "Probationary":
                 return new Probationary(id, firstName, lastName, email, phone, address,
-                        employeeType, positionLevel, department, sssNumber, philHealthNumber,
+                        employeeType, positionLevel, role, sssNumber, philHealthNumber,
                         tin, pagIbigNumber, compensation);
             case "Regular":
-                switch (department) {
+                switch (role) {
                     case "HR":
                         return new HR(id, firstName, lastName, email, phone, address,
-                                employeeType, positionLevel, department, sssNumber, philHealthNumber,
+                                employeeType, positionLevel, role, sssNumber, philHealthNumber,
                                 tin, pagIbigNumber, compensation);
                     case "Finance":
                         return new Finance(id, firstName, lastName, email, phone, address,
-                                employeeType, positionLevel, department, sssNumber, philHealthNumber,
+                                employeeType, positionLevel, role, sssNumber, philHealthNumber,
                                 tin, pagIbigNumber, compensation);
                     case "IT":
                         return new IT(id, firstName, lastName, email, phone, address,
-                                employeeType, positionLevel, department, sssNumber, philHealthNumber,
+                                employeeType, positionLevel, role, sssNumber, philHealthNumber,
                                 tin, pagIbigNumber, compensation);
                     default:
                         return new Regular(id, firstName, lastName, email, phone, address,
-                                employeeType, positionLevel, department, sssNumber, philHealthNumber,
+                                employeeType, positionLevel, role, sssNumber, philHealthNumber,
                                 tin, pagIbigNumber, compensation);
                 }
             default:
@@ -124,7 +139,7 @@ public class EmployeeService {
         }
 
         return createEmployee(emp.getId(), emp.getFirstName(), emp.getLastName(), emp.getEmail(), emp.getPhoneNumber(),
-                emp.getAddress(), emp.getEmployeeType(), emp.getPositionLevel(), emp.getDepartment(),
+                emp.getAddress(), emp.getEmployeeType(), emp.getPositionLevel(), emp.getRole(),
                 emp.getSssNumber(), emp.getPhilHealthNumber(), emp.getTin(), emp.getPagIbigNumber(),
                 emp.getCompensation());
     }

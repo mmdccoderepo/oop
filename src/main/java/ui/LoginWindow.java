@@ -6,8 +6,6 @@ import service.AuthenticationService;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 
 public class LoginWindow extends JFrame {
     private JTextField txtUsername;
@@ -36,18 +34,16 @@ public class LoginWindow extends JFrame {
     }
 
     private void initializeUI() {
-        setTitle("Login");
-        setSize(400, 260);
+        setTitle("MotorPH Payroll System - Login");
+        setSize(400, 240);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout(10, 10));
         setLocationRelativeTo(null);
 
-        // Main panel with padding
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 40, 20, 40));
 
-        // Title
         JLabel lblTitle = new JLabel("MotorPH Payroll System");
         lblTitle.setFont(new Font("Arial", Font.BOLD, 18));
         lblTitle.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -63,7 +59,7 @@ public class LoginWindow extends JFrame {
         usernamePanel.add(lblUsername);
         usernamePanel.add(txtUsername);
         mainPanel.add(usernamePanel);
-        mainPanel.add(Box.createVerticalStrut(10));
+        mainPanel.add(Box.createVerticalStrut(5));
 
         // Password field
         JPanel passwordPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
@@ -80,13 +76,7 @@ public class LoginWindow extends JFrame {
         btnLogin = new JButton("Log In");
         btnLogin.setAlignmentX(Component.CENTER_ALIGNMENT);
         btnLogin.setPreferredSize(new Dimension(120, 30));
-        btnLogin.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                handleLogin();
-            }
-        });
-
+        btnLogin.addActionListener(e -> handleLogin());
         txtPassword.addActionListener(e -> handleLogin());
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -118,21 +108,12 @@ public class LoginWindow extends JFrame {
             return;
         }
 
-        String department = employee.getDepartment();
         this.dispose();
 
-        if ("HR".equals(department)) {
-            SwingUtilities.invokeLater(() -> {
-                EmployeeManagementWindow frame = new EmployeeManagementWindow(
-                        employeeDAO, allowanceDAO, deductionDAO, taxDAO, attendanceLogDAO, leaveDAO, employee);
-                frame.setVisible(true);
-            });
-        } else {
-            SwingUtilities.invokeLater(() -> {
-                LeaveManagementWindow leaveWindow = new LeaveManagementWindow(
-                        leaveDAO, employeeDAO, allowanceDAO, deductionDAO, taxDAO, attendanceLogDAO, employee);
-                leaveWindow.setVisible(true);
-            });
-        }
+        SwingUtilities.invokeLater(() -> {
+            TimeInOutWindow timeInOutWindow = new TimeInOutWindow(
+                    employeeDAO, allowanceDAO, deductionDAO, taxDAO, attendanceLogDAO, leaveDAO, employee);
+            timeInOutWindow.setVisible(true);
+        });
     }
 }

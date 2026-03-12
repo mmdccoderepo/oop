@@ -11,15 +11,20 @@ public class AuthenticationService {
         this.userAccountDAO = userAccountDAO;
     }
 
+    /**
+     * Authenticates a user by username and password.
+     * The CSV stores username -> employeeId (which is also the password).
+     * Returns the employeeId if successful, or -1 if authentication fails.
+     */
     public int authenticate(String username, String password) {
         if (username == null || password == null) {
             return -1;
         }
         Map<String, String> accounts = userAccountDAO.getAll();
-        String stored = accounts.get(username.trim());
-        if (stored != null && stored.equals(password.trim())) {
+        String storedEmployeeId = accounts.get(username.trim());
+        if (storedEmployeeId != null && storedEmployeeId.trim().equals(password.trim())) {
             try {
-                return Integer.parseInt(stored);
+                return Integer.parseInt(storedEmployeeId.trim());
             } catch (NumberFormatException e) {
                 return -1;
             }
@@ -27,4 +32,3 @@ public class AuthenticationService {
         return -1;
     }
 }
-

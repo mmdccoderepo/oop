@@ -2,7 +2,6 @@ package service;
 
 import dao.LeaveDAO;
 import model.Employee;
-import model.HR;
 import model.Leave;
 
 import java.time.LocalDate;
@@ -21,7 +20,7 @@ public class LeaveService {
     }
 
     public void approveLeave(Employee approver, int leaveId) throws IllegalAccessException {
-        if (!(approver instanceof HR)) {
+        if (!"HR".equals(approver.getRole())) {
             throw new IllegalAccessException("Only HR employees can approve leaves");
         }
 
@@ -33,7 +32,7 @@ public class LeaveService {
     }
 
     public void rejectLeave(Employee approver, int leaveId) throws IllegalAccessException {
-        if (!(approver instanceof HR)) {
+        if (!"HR".equals(approver.getRole())) {
             throw new IllegalAccessException("Only HR employees can reject leaves");
         }
 
@@ -49,10 +48,9 @@ public class LeaveService {
     }
 
     public List<Leave> getAll(Employee requester) throws IllegalAccessException {
-        if (!(requester instanceof HR)) {
+        if (!"HR".equals(requester.getRole())) {
             throw new IllegalAccessException("Only HR employees can view all leaves");
         }
         return leaveDAO.getAll();
     }
 }
-

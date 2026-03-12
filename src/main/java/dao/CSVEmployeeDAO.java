@@ -37,7 +37,6 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
         List<Employee> employees = getAll();
 
         for (Employee employee : employees) {
-            System.out.println("Checking employee ID: " + employee.getId() + " against " + id);
             if (employee.getId() == id) {
                 return employee;
             }
@@ -136,7 +135,7 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
             String address = parts[5];
             String employeeType = parts[6];
             String positionLevel = parts[7];
-            String department = parts[8];
+            String role = parts[8];
             String sssNumber = parts[9];
             String philHealthNumber = parts[10];
             String tin = parts[11];
@@ -152,29 +151,29 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
             switch (employeeType) {
                 case "Probationary":
                     employee = new Probationary(id, firstName, lastName, email, phoneNumber, address,
-                            employeeType, positionLevel, department, sssNumber, philHealthNumber,
+                            employeeType, positionLevel, role, sssNumber, philHealthNumber,
                             tin, pagIbigNumber, compensation);
                     break;
                 case "Regular":
-                    switch (department) {
+                    switch (role) {
                         case "HR":
                             employee = new HR(id, firstName, lastName, email, phoneNumber, address,
-                                    employeeType, positionLevel, department, sssNumber, philHealthNumber,
+                                    employeeType, positionLevel, role, sssNumber, philHealthNumber,
                                     tin, pagIbigNumber, compensation);
                             break;
                         case "Finance":
                             employee = new Finance(id, firstName, lastName, email, phoneNumber, address,
-                                    employeeType, positionLevel, department, sssNumber, philHealthNumber,
+                                    employeeType, positionLevel, role, sssNumber, philHealthNumber,
                                     tin, pagIbigNumber, compensation);
                             break;
                         case "IT":
                             employee = new IT(id, firstName, lastName, email, phoneNumber, address,
-                                    employeeType, positionLevel, department, sssNumber, philHealthNumber,
+                                    employeeType, positionLevel, role, sssNumber, philHealthNumber,
                                     tin, pagIbigNumber, compensation);
                             break;
                         default:
                             employee = new Regular(id, firstName, lastName, email, phoneNumber, address,
-                                    employeeType, positionLevel, department, sssNumber, philHealthNumber,
+                                    employeeType, positionLevel, role, sssNumber, philHealthNumber,
                                     tin, pagIbigNumber, compensation);
                             break;
                     }
@@ -191,7 +190,7 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
 
     private boolean writeAll(List<Employee> employees) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(filePath))) {
-            writer.write("id,firstName,lastName,email,phoneNumber,address,employeeType,positionLevel,department,sssNumber,philHealthNumber,tin,pagIbigNumber,compensation");
+            writer.write("id,firstName,lastName,email,phoneNumber,address,employeeType,positionLevel,role,sssNumber,philHealthNumber,tin,pagIbigNumber,compensation");
             writer.newLine();
             for (Employee employee : employees) {
                 writer.write(employeeToCsv(employee));
@@ -217,7 +216,7 @@ public class CSVEmployeeDAO extends CSVBaseDAO implements EmployeeDAO {
                 address,
                 employee.getEmployeeType(),
                 employee.getPositionLevel(),
-                employee.getDepartment(),
+                employee.getRole(),
                 employee.getSssNumber(),
                 employee.getPhilHealthNumber(),
                 employee.getTin(),
