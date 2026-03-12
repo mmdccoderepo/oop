@@ -31,7 +31,7 @@
 
 When the application starts, you'll see a login window with:
 
-- **Username**: Enter your username (based on email without domain)
+- **Username**: Enter your username (based on email without domain in lower case)
 - **Password**: Enter your password (employee ID)
 - **Log In Button**: Click to proceed
 
@@ -71,6 +71,7 @@ When the application starts, you'll see a login window with:
 
 **Features**:
 - Create, update, and delete employees
+  (Upon the addition of a new employee, the system automatically populates the user_account.csv file with their default login credentials.)
 - View all employee records in a table
 - Manage employee details:
   - Personal information (name, email, phone, address)
