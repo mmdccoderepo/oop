@@ -3,15 +3,21 @@ package service;
 import dao.EmployeeDAO;
 import model.*;
 
+import dao.UserAccountDAO;
+import dao.CSVUserAccountDAO;
+import java.util.Map;
 import java.util.List;
 
 public class EmployeeService {
     private EmployeeDAO employeeDAO;
 
+    private UserAccountDAO userAccountDAO = new CSVUserAccountDAO();
+    
     public EmployeeService(EmployeeDAO employeeDAO) {
         this.employeeDAO = employeeDAO;
     }
-
+    
+    
     private void validateEmployee(Employee employee) throws IllegalArgumentException {
         if (employee.getFirstName() == null || employee.getFirstName().isBlank()) {
             throw new IllegalArgumentException("First name is required.");
@@ -69,6 +75,21 @@ public class EmployeeService {
         if (!employeeDAO.create(employee)) {
             throw new RuntimeException("Failed to save the employee. Please try again.");
         }
+       
+        String username = employee.getFirstName().toLowerCase() + "." + employee.getLastName().toLowerCase();
+
+    
+        Map<String, String> accounts = userAccountDAO.getAll();
+        if (accounts.containsKey(username)) {
+        username = username + employee.getId(); 
+        }
+
+        
+        String password = String.valueOf(employee.getId());
+
+        
+        userAccountDAO.create(username, password);
+        
     }
 
     public void updateEmployee(Employee employee) throws IllegalArgumentException {
