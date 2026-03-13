@@ -155,6 +155,9 @@ abstract public class Employee implements Payable {
         if (hoursWorked < 0) {
             throw new IllegalArgumentException("Hours worked cannot be negative.");
         }
+        if (hoursWorked > 336) {
+            throw new IllegalArgumentException("Hours worked exceeds bi-weekly maximum of 336 hours.");
+        }
         this.hoursWorked = hoursWorked;
     }
 
@@ -218,12 +221,22 @@ abstract public class Employee implements Payable {
         }
 
         Deduction matchingBracket = null;
+        Deduction highestBracket = null;
+
         for (Deduction deduction : deductions) {
+            if (highestBracket == null || deduction.getSalaryMax() > highestBracket.getSalaryMax()) {
+                highestBracket = deduction;
+            }
+
             if (gross >= deduction.getSalaryMin() && gross <= deduction.getSalaryMax()) {
                 if (matchingBracket == null || deduction.getSalaryMin() > matchingBracket.getSalaryMin()) {
                     matchingBracket = deduction;
                 }
             }
+        }
+
+        if (matchingBracket == null && highestBracket != null && gross > highestBracket.getSalaryMax()) {
+            matchingBracket = highestBracket;
         }
 
         if (matchingBracket == null) {
@@ -246,10 +259,22 @@ abstract public class Employee implements Payable {
         }
 
         TaxBracket matchingBracket = null;
+        TaxBracket highestBracket = null;
+
         for (TaxBracket taxBracket : taxBrackets) {
+            if (highestBracket == null || taxBracket.getSalaryMax() > highestBracket.getSalaryMax()) {
+                highestBracket = taxBracket;
+            }
+
             if (taxableIncome >= taxBracket.getSalaryMin() && taxableIncome <= taxBracket.getSalaryMax()) {
                 matchingBracket = taxBracket;
             }
+        }
+
+        if (matchingBracket == null && highestBracket != null && taxableIncome > highestBracket.getSalaryMax()) {
+            matchingBracket = highestBracket;
+            double excess = taxableIncome - matchingBracket.getSalaryMin();
+            return matchingBracket.getBaseAmount() + (excess * matchingBracket.getRate());
         }
 
         if (matchingBracket == null) {

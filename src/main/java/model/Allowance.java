@@ -8,6 +8,9 @@ public class Allowance {
     public Allowance(String positionLevel, String name, double amount) {
         this.positionLevel = positionLevel;
         this.name = name;
+        if (amount < 0) {
+            throw new IllegalArgumentException("Allowance amount cannot be negative.");
+        }
         this.amount = amount;
     }
 
@@ -32,6 +35,9 @@ public class Allowance {
     }
 
     public void setAmount(double amount) {
+        if (amount < 0) {
+            throw new IllegalArgumentException("Allowance amount cannot be negative.");
+        }
         this.amount = amount;
     }
 }

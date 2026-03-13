@@ -1,23 +1,23 @@
 package service;
 
+import dao.CSVUserAccountDAO;
 import dao.EmployeeDAO;
+import dao.UserAccountDAO;
 import model.*;
 
-import dao.UserAccountDAO;
-import dao.CSVUserAccountDAO;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 
 public class EmployeeService {
     private EmployeeDAO employeeDAO;
 
     private UserAccountDAO userAccountDAO = new CSVUserAccountDAO();
-    
+
     public EmployeeService(EmployeeDAO employeeDAO) {
         this.employeeDAO = employeeDAO;
     }
-    
-    
+
+
     private void validateEmployee(Employee employee) throws IllegalArgumentException {
         if (employee.getFirstName() == null || employee.getFirstName().isBlank()) {
             throw new IllegalArgumentException("First name is required.");
@@ -75,21 +75,31 @@ public class EmployeeService {
         if (!employeeDAO.create(employee)) {
             throw new RuntimeException("Failed to save the employee. Please try again.");
         }
-       
+
         String username = employee.getFirstName().toLowerCase() + "." + employee.getLastName().toLowerCase();
 
-    
+
         Map<String, String> accounts = userAccountDAO.getAll();
         if (accounts.containsKey(username)) {
-        username = username + employee.getId(); 
+            username = username + employee.getId();
         }
 
-        
+
         String password = String.valueOf(employee.getId());
 
-        
+
         userAccountDAO.create(username, password);
-        
+
+    }
+
+    public void addEmployee(String firstName, String lastName, String email, String phone,
+                            String address, String employeeType, String positionLevel, String role,
+                            String sssNumber, String philHealthNumber, String tin,
+                            String pagIbigNumber, double compensation) throws IllegalArgumentException {
+        Employee employee = createEmployee(0, firstName, lastName, email, phone, address,
+                employeeType, positionLevel, role, sssNumber, philHealthNumber, tin,
+                pagIbigNumber, compensation);
+        addEmployee(employee);
     }
 
     public void updateEmployee(Employee employee) throws IllegalArgumentException {
@@ -112,6 +122,13 @@ public class EmployeeService {
         if (!employeeDAO.delete(id)) {
             throw new RuntimeException("Failed to delete the employee. Please try again.");
         }
+    }
+
+    public void deleteEmployee(Employee employee) throws IllegalArgumentException {
+        if (employee == null) {
+            throw new IllegalArgumentException("Employee cannot be null.");
+        }
+        deleteEmployee(employee.getId());
     }
 
     public List<Employee> getAllEmployees() {
@@ -150,6 +167,21 @@ public class EmployeeService {
             default:
                 throw new IllegalArgumentException("Invalid employee type: " + employeeType);
         }
+    }
+
+    public Employee createEmployee(String firstName, String lastName, String email,
+                                   String employeeType, String positionLevel, String role, double compensation) {
+        return createEmployee(0, firstName, lastName, email,
+                "",
+                "",
+                employeeType,
+                positionLevel,
+                role,
+                "00-0000000-0",
+                "000000000000",
+                "000-000-000-000",
+                "000000000000",
+                compensation);
     }
 
     public Employee getEmployeeById(int id) {

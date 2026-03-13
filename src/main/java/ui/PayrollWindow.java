@@ -373,7 +373,7 @@ public class PayrollWindow extends JFrame {
         addInfoRow(infoPanel, "Full Name:", emp.getFirstName() + " " + emp.getLastName());
         addInfoRow(infoPanel, "Role:", emp.getRole());
         addInfoRow(infoPanel, "Employment:", emp.getEmployeeType() + " – " + emp.getPositionLevel());
-        addInfoRow(infoPanel, "Hours Worked:", hoursWorked + " hrs");
+        addInfoRow(infoPanel, "Hours Worked:", hoursWorked + (hoursWorked == 1 ? " hr" : " hrs"));
         addInfoRow(infoPanel, "Compensation:", String.format("₱ %,.2f", emp.getCompensation())
                 + (emp.getEmployeeType().equals("Probationary") ? " / hr" : " / mo"));
 
